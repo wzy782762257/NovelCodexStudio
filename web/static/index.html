@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Novel Codex Studio · 批量控制室</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    /* 额外图标替代 */
+    .icon { display: inline-block; width: 1em; height: 1em; text-align: center; }
+    .spin { animation: spin 1.5s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn { cursor: pointer; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .hidden { display: none !important; }
+    .loading { color: var(--cyan); }
+    .api-error { color: var(--red); font-size: 11px; padding: 8px 12px; background: #2a1518; border: 1px solid #5e2a2e; border-radius: 4px; margin: 8px 12px; }
+  </style>
+</head>
+<body>
+  <div class="app-shell" id="app">
+    <div id="toast" class="toast hidden" role="status"></div>
+
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">◆</div>
+        <span>Novel Codex Studio</span>
+        <span class="edition">批量控制室</span>
+      </div>
+      <div class="top-actions">
+        <button id="btn-global-settings">⚙ 全局设置</button>
+        <button id="btn-batch-settings">◎ 批次设置</button>
+        <button id="btn-export">↗ 导出报告</button>
+      </div>
+    </header>
+
+    <section class="batch-rail" aria-label="批次章节状态">
+      <div class="batch-heading">
+        <span id="batch-name">批次：...</span>
+        <small id="batch-range">...</small>
+      </div>
+      <div class="legend">
+        <span><i class="dot working"></i>生成中</span>
+        <span><i class="dot active"></i>终审中</span>
+        <span><i class="dot done"></i>已批准</span>
+        <span><i class="dot blocked"></i>异常/阻断</span>
+      </div>
+      <div class="chapter-track" id="chapter-track"></div>
+    </section>
+
+    <section class="live-log-panel" id="live-log-panel" style="grid-area: log; padding: 8px 16px; background: #0d1117; border-bottom: 1px solid #1e293b; display: flex; align-items: center; gap: 12px;">
+      <span style="color: #6b7a8f; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">引擎日志</span>
+      <div id="live-log" style="flex: 1; font-family: 'SF Mono', 'Cascadia Code', 'JetBrains Mono', monospace; font-size: 11px; color: #9b9faf; max-height: 80px; overflow-y: auto; background: #0a0e15; padding: 6px 10px; border: 1px solid #1e293b; border-radius: 4px; line-height: 1.5;">
+        <div style="color: #3b5a7a;">等待引擎启动...</div>
+      </div>
+      <button id="btn-clear-log" style="background: #151a23; color: #6b7a8f; border: 1px solid #1e293b; padding: 4px 10px; font-size: 11px; border-radius: 4px; cursor: pointer;">清空</button>
+    </section>
+
+    <main class="workspace">
+      <aside class="left-panel">
+        <section class="project-summary">
+          <span class="eyebrow">当前项目</span>
+          <h1 id="project-title">...</h1>
+          <p id="project-genre">...</p>
+          <div class="metric-row"><span>目标</span><strong id="project-target">...</strong></div>
+        </section>
+
+        <section class="side-section">
+          <div class="section-title">📖 小说结构 <span>大纲模式</span></div>
+          <div class="tree-group" id="outline-tree"></div>
+        </section>
+
+        <section class="side-section intelligence">
+          <div class="section-title">🔍 角色与伏笔速览</div>
+          <div id="characters"></div>
+          <ul class="clues" id="clues"></ul>
+        </section>
+
+        <section class="batch-control">
+          <div class="section-title">⏹ 批量执行控制</div>
+          <div class="pause-row">
+            <div>
+              <strong id="pause-status">批次已暂停</strong>
+              <small id="pause-desc">不会继续生成后续章节</small>
+            </div>
+            <button class="switch" id="pause-switch" aria-label="暂停或继续批次"><span></span></button>
+          </div>
+          <button class="stop-all" id="btn-stop-all">⏹ 停止全部</button>
+          <div class="runtime" id="runtime-stats">
+            <span>已用时：--</span>
+            <span>预计剩余：--</span>
+            <span>进度：--</span>
+          </div>
+        </section>
+      </aside>
+
+      <section class="center-stage">
+        <div class="editor-header">
+          <div>
+            <span class="eyebrow">正文</span>
+            <strong id="editor-title">第 1 章 · ...</strong>
+          </div>
+          <div class="view-tabs">
+            <button class="active" data-view="write">写作视图</button>
+            <button data-view="read">阅读视图</button>
+          </div>
+          <div class="word-count">
+            <span>本章字数</span>
+            <strong id="word-count">0</strong>
+            <small> / 2,000–3,000</small>
+          </div>
+        </div>
+        <div class="format-bar">
+          <span class="saved" id="save-status">✓ 已自动保存</span>
+          <span class="bar-spacer"></span>
+          <button id="btn-generate" class="btn primary">▶ 生成本章</button>
+          <button id="btn-regenerate" class="btn hidden">↻ 重新生成</button>
+        </div>
+        <article class="manuscript" id="manuscript">
+          <header>
+            <h2 id="chapter-title">...</h2>
+            <p id="chapter-subtitle">...</p>
+          </header>
+          <div class="prose" id="prose"></div>
+        </article>
+
+        <section class="production-trace collapsed" id="trace-section">
+          <button class="trace-title" id="trace-toggle">
+            <span>生产轨迹 <small>已折叠</small></span>▶
+          </button>
+          <div class="trace-rows" id="trace-rows"></div>
+        </section>
+
+        <section class="direction-panel">
+          <div class="direction-title">↻ 后续方向控制 <span>影响当前章后所有未生成章节</span></div>
+          <textarea id="direction-text" placeholder="输入后续章节方向..."></textarea>
+          <div class="direction-actions">
+            <span id="direction-count">0/1000</span>
+            <button id="btn-clear-direction">清空</button>
+            <button class="primary" id="btn-save-direction">应用到后续章节</button>
+          </div>
+        </section>
+      </section>
+
+      <aside class="decision-panel">
+        <div class="decision-header">
+          <div>
+            <span class="eyebrow">人工决策队列</span>
+            <h2>需要作者决定</h2>
+          </div>
+          <span class="count-badge" id="issue-count">0</span>
+        </div>
+        <div class="issue-list" id="issue-list"></div>
+        <div class="empty-decisions hidden" id="empty-issues">
+          ✓ <strong>所有问题已处理</strong>
+          <span>本章可以进入批准流程</span>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="approval-bar">
+      <button class="approve" id="btn-approve">
+        ✓ <span><strong>批准当前章</strong><small>并继续生成下一章</small></span>
+      </button>
+      <button class="approve batch" id="btn-approve-batch">
+        ✓ <span><strong>批准本批</strong><small>全部章节整体通过</small></span>
+      </button>
+      <button class="return" id="btn-return">
+        ↻ <span><strong>退回本章</strong><small>打开重审 / 修改</small></span>
+      </button>
+      <button class="replan" id="btn-replan">
+        ⚠ <span><strong>从此章重新规划</strong><small>重置当前及之后</small></span>
+      </button>
+      <div class="cost-summary" id="cost-summary">💰 <span>本批总消耗 <strong>--</strong></span></div>
+    </footer>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

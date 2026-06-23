@@ -1,0 +1,42 @@
+{
+  "meta": {
+    "schema_version": "story-system/v1",
+    "contract_type": "REVIEW_CONTRACT",
+    "generator_version": "phase2",
+    "source_trace": []
+  },
+  "must_check": [
+    "陈默 | 接入 | 零点后的异常求救电话",
+    "旧儿童手表 | 留下 | “别让他们找到哥哥”的回声",
+    "陈默 | 查到 | 来电号码属于已故妹妹陈曦"
+  ],
+  "blocking_rules": [
+    "不得解释静默计划全貌",
+    "不得确认陈曦生还",
+    "不得让陈默主动破案越权",
+    "不得出现第二句回声。"
+  ],
+  "genre_specific_risks": [
+    "都市异能"
+  ],
+  "anti_patterns": [
+    "异能无代价",
+    "现代秩序消失",
+    "战斗后没有后果",
+    "情感靠标签",
+    "日常无冲突",
+    "角色千人一面"
+  ],
+  "system_constraints": [
+    "现代秩序下的能力反差"
+  ],
+  "review_thresholds": {
+    "blocking_count": 0,
+    "missed_nodes": 0
+  },
+  "overrides": {
+    "locked": {},
+    "append_only": {},
+    "override_allowed": {}
+  }
+}

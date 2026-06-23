@@ -1,0 +1,353 @@
+{
+  "character_state": [
+    {
+      "id": "mem-character_state-fb4f2226b85e4909",
+      "layer": "semantic",
+      "category": "character_state",
+      "subject": "chen_mo",
+      "field": "location.current",
+      "value": "临江市120急救调度中心",
+      "payload": {
+        "old_value": ""
+      },
+      "status": "active",
+      "source_chapter": 1,
+      "evidence": [
+        "state_change:chen_mo:location.current:1"
+      ],
+      "updated_at": "2026-06-22T16:20:21"
+    },
+    {
+      "id": "mem-character_state-f36c0c53811a0ee0",
+      "layer": "semantic",
+      "category": "character_state",
+      "subject": "chen_mo",
+      "field": "golden_finger.name",
+      "value": "零点回声",
+      "payload": {
+        "old_value": "未命名金手指"
+      },
+      "status": "active",
+      "source_chapter": 1,
+      "evidence": [
+        "state_change:chen_mo:golden_finger.name:1"
+      ],
+      "updated_at": "2026-06-22T16:20:21"
+    },
+    {
+      "id": "mem-character_state-3f45c2aba24a1be6",
+      "layer": "semantic",
+      "category": "character_state",
+      "subject": "chen_mo",
+      "field": "first_seen",
+      "value": "陈默",
+      "payload": {
+        "tier": "装饰",
+        "type": "角色"
+      },
+      "status": "active",
+      "source_chapter": 1,
+      "evidence": [
+        "entity_new:chen_mo:1"
+      ],
+      "updated_at": "2026-06-22T16:20:21"
+    },
+    {
+      "id": "mem-character_state-7a927a19f20eb534",
+      "layer": "semantic",
+      "category": "character_state",
+      "subject": "zhou_qiming",
+      "field": "first_seen",
+      "value": "周启明",
+      "payload": {
+        "tier": "装饰",
+        "type": "角色"
+      },
+      "status": "active",
+      "source_chapter": 1,
+      "evidence": [
+        "entity_new:zhou_qiming:1"
+      ],
+      "updated_at": "2026-06-22T16:20:21"
+    },
+    {
+      "id": "mem-character_state-194ae69303bc2711",
+      "layer": "semantic",
+      "category": "character_state",
+      "subject": "old_child_watch",
+      "field": "first_seen",
+      "value": "旧儿童手表",
+      "payload": {
+        "tier": "装饰",
+        "type": "物品"
+      },
+      "status": "active",
+      "source_chapter": 1,
+      "evidence": [
+        "entity_new:old_child_watch:1"
+      ],
+      "updated_at": "2026-06-22T16:20:21"
+    },
+    {
+      "id": "mem-character_state-a72bb097e421c167",
+      "layer": "semantic",
+      "category": "character_state",
+      "subject": "陈默",
+      "field": "location.current",
+      "value": "值班室",
+      "payload": {
+        "old_value": "录音复核室"
+      },
+      "status": "active",
+      "source_chapter": 2,
+      "evidence": [
+        "state_change:陈默:location.current:2"
+      ],
+      "updated_at": "2026-06-22T18:17:02"
+    },
+    {
+      "id": "mem-character_state-7cfed3333b0f4090",
+      "layer": "semantic",
+      "category": "character_state",
+      "subject": "儿童手表",
+      "field": "possession_status",
+      "value": "周启明公文包",
+      "payload": {
+        "old_value": "储物柜"
+      },
+      "status": "active",
+      "source_chapter": 2,
+      "evidence": [
+        "state_change:儿童手表:possession_status:2"
+      ],
+      "updated_at": "2026-06-22T18:17:02"
+    },
+    {
+      "id": "mem-character_state-25c228c999e62b1b",
+      "layer": "semantic",
+      "category": "character_state",
+      "subject": "赵一鸣",
+      "field": "first_seen",
+      "value": "赵一鸣",
+      "payload": {
+        "tier": "装饰",
+        "type": "角色"
+      },
+      "status": "active",
+      "source_chapter": 2,
+      "evidence": [
+        "entity_new:赵一鸣:2"
+      ],
+      "updated_at": "2026-06-22T18:17:02"
+    },
+    {
+      "id": "mem-character_state-5ed45bb7f1423b9a",
+      "layer": "semantic",
+      "category": "character_state",
+      "subject": "周启明",
+      "field": "first_seen",
+      "value": "周启明",
+      "payload": {
+        "tier": "装饰",
+        "type": "角色"
+      },
+      "status": "active",
+      "source_chapter": 2,
+      "evidence": [
+        "entity_new:周启明:2"
+      ],
+      "updated_at": "2026-06-22T18:17:02"
+    }
+  ],
+  "story_facts": [],
+  "world_rules": [
+    {
+      "id": "mem-world_rule-182d56d3e30cf39c",
+      "layer": "semantic",
+      "category": "world_rule",
+      "subject": "零点回声",
+      "field": "world_rule_revealed",
+      "value": "陈默在零点后裸手触碰强事件关联物品时，可能听见一句带歧义的真实回声；首次触发伴随眩晕和耳鸣。",
+      "payload": {
+        "scope": "等级1初听",
+        "rule_text": "陈默在零点后裸手触碰强事件关联物品时，可能听见一句带歧义的真实回声；首次触发伴随眩晕和耳鸣。"
+      },
+      "status": "active",
+      "source_chapter": 1,
+      "evidence": [
+        "memory_facts:world_rule:1"
+      ],
+      "updated_at": "2026-06-22T16:20:21"
+    }
+  ],
+  "timeline": [],
+  "open_loops": [
+    {
+      "id": "mem-open_loop-20b017d33e1468a8",
+      "layer": "semantic",
+      "category": "open_loop",
+      "subject": "调度系统",
+      "field": "status",
+      "value": "调度系统",
+      "payload": {
+        "urgency": 0.0,
+        "planted_chapter": 1,
+        "expected_payoff": null,
+        "status": "active"
+      },
+      "status": "active",
+      "source_chapter": 1,
+      "evidence": [
+        "memory_facts:open_loop:1"
+      ],
+      "updated_at": "2026-06-22T16:20:21"
+    },
+    {
+      "id": "mem-open_loop-f4b92399ac726411",
+      "layer": "semantic",
+      "category": "open_loop",
+      "subject": "陈默",
+      "field": "status",
+      "value": "陈默",
+      "payload": {
+        "urgency": 0.0,
+        "planted_chapter": 1,
+        "expected_payoff": null,
+        "status": "active"
+      },
+      "status": "active",
+      "source_chapter": 1,
+      "evidence": [
+        "memory_facts:open_loop:1"
+      ],
+      "updated_at": "2026-06-22T16:20:21"
+    },
+    {
+      "id": "mem-open_loop-853e61c8b9ff884b",
+      "layer": "semantic",
+      "category": "open_loop",
+      "subject": "零点后的异常求救电话来自河西旧表厂宿舍，号码无法正常回拨。",
+      "field": "status",
+      "value": "零点后的异常求救电话来自河西旧表厂宿舍，号码无法正常回拨。",
+      "payload": {
+        "urgency": 90.0,
+        "planted_chapter": 1,
+        "expected_payoff": null,
+        "status": "active"
+      },
+      "status": "active",
+      "source_chapter": 1,
+      "evidence": [
+        "memory_facts:open_loop:1"
+      ],
+      "updated_at": "2026-06-22T16:20:21"
+    },
+    {
+      "id": "mem-open_loop-00a2b9ef4d267436",
+      "layer": "semantic",
+      "category": "open_loop",
+      "subject": "异常来电号码登记人为三年前已故的妹妹陈曦。",
+      "field": "status",
+      "value": "异常来电号码登记人为三年前已故的妹妹陈曦。",
+      "payload": {
+        "urgency": 100.0,
+        "planted_chapter": 1,
+        "expected_payoff": null,
+        "status": "active"
+      },
+      "status": "active",
+      "source_chapter": 1,
+      "evidence": [
+        "memory_facts:open_loop:1"
+      ],
+      "updated_at": "2026-06-22T16:20:21"
+    },
+    {
+      "id": "mem-open_loop-36dbc0c5a4c662e4",
+      "layer": "semantic",
+      "category": "open_loop",
+      "subject": "陈默发现编号0622-0001录音被人工编辑过，4000Hz频段有整齐断口",
+      "field": "status",
+      "value": "陈默发现编号0622-0001录音被人工编辑过，4000Hz频段有整齐断口",
+      "payload": {
+        "urgency": 0.0,
+        "planted_chapter": 2,
+        "expected_payoff": null,
+        "status": "active"
+      },
+      "status": "active",
+      "source_chapter": 2,
+      "evidence": [
+        "memory_facts:open_loop:2"
+      ],
+      "updated_at": "2026-06-22T18:17:02"
+    },
+    {
+      "id": "mem-open_loop-a6889879d3dec6bf",
+      "layer": "semantic",
+      "category": "open_loop",
+      "subject": "已锁柜的儿童手表突然收到消息，表壳颜色与记忆不符但裂痕一致",
+      "field": "status",
+      "value": "已锁柜的儿童手表突然收到消息，表壳颜色与记忆不符但裂痕一致",
+      "payload": {
+        "urgency": 0.0,
+        "planted_chapter": 2,
+        "expected_payoff": null,
+        "status": "active"
+      },
+      "status": "active",
+      "source_chapter": 2,
+      "evidence": [
+        "memory_facts:open_loop:2"
+      ],
+      "updated_at": "2026-06-22T18:17:02"
+    },
+    {
+      "id": "mem-open_loop-c64cccac8f895037",
+      "layer": "semantic",
+      "category": "open_loop",
+      "subject": "系统显示三个月前另有录音警告'别相信三院的ECMO'，妹妹死亡证明由三院签发但签名被涂改",
+      "field": "status",
+      "value": "系统显示三个月前另有录音警告'别相信三院的ECMO'，妹妹死亡证明由三院签发但签名被涂改",
+      "payload": {
+        "urgency": 0.0,
+        "planted_chapter": 2,
+        "expected_payoff": null,
+        "status": "active"
+      },
+      "status": "active",
+      "source_chapter": 2,
+      "evidence": [
+        "memory_facts:open_loop:2"
+      ],
+      "updated_at": "2026-06-22T18:17:02"
+    },
+    {
+      "id": "mem-open_loop-da3ccb5b64d5bc8f",
+      "layer": "semantic",
+      "category": "open_loop",
+      "subject": "未知号码发来监控照片和警告'他们在钓你'，显示有人雨中监视调度中心",
+      "field": "status",
+      "value": "未知号码发来监控照片和警告'他们在钓你'，显示有人雨中监视调度中心",
+      "payload": {
+        "urgency": 0.0,
+        "planted_chapter": 2,
+        "expected_payoff": null,
+        "status": "active"
+      },
+      "status": "active",
+      "source_chapter": 2,
+      "evidence": [
+        "memory_facts:open_loop:2"
+      ],
+      "updated_at": "2026-06-22T18:17:02"
+    }
+  ],
+  "reader_promises": [],
+  "relationships": [],
+  "meta": {
+    "version": 1,
+    "last_updated": "2026-06-22T18:17:02",
+    "total_items": 18
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "meta": {
+    "schema_version": "story-system/v1",
+    "contract_type": "CHAPTER_BRIEF",
+    "generator_version": "outline_extractor",
+    "chapter": 4
+  },
+  "override_allowed": {
+    "chapter_focus": "陈默在第二个零点验证回声规则。"
+  },
+  "chapter_directive": {
+    "time_anchor": "6月22日23:50，陈默住处。",
+    "chapter_span": "2小时。",
+    "countdown": "手表回收 D-2。",
+    "goal": "陈默在第二个零点验证回声规则。",
+    "strand": "Quest。",
+    "antagonist_tier": "孟骁监控到陈默住处附近。",
+    "key_entities": [
+      "旧儿童手表",
+      "维修刻痕",
+      "陈曦钥匙扣"
+    ],
+    "chapter_end_open_question": "维修刻痕对应谁的手艺。",
+    "cbn": "陈默 | 等到 | 第二个零点",
+    "cpns": [
+      "旧儿童手表 | 复现 | 残缺回响",
+      "陈默 | 记录 | 回声触发条件",
+      "陈默 | 发现 | 手表背面维修刻痕",
+      "陌生人 | 投递 | 失物认领单复印件"
+    ],
+    "cen": "陈默 | 确认 | 手表正在被人追索",
+    "must_cover_nodes": [
+      "CBN",
+      "陈默 | 发现 | 手表背面维修刻痕",
+      "CEN"
+    ],
+    "forbidden_zones": [
+      "不得让能力升级到追问",
+      "不得暴露投递者正脸。"
+    ],
+    "source": "chapter_outline"
+  }
+}

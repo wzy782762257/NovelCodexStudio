@@ -1,0 +1,124 @@
+{
+  "project_info": {
+    "title": "零点回声",
+    "genre": "都市",
+    "genre_label": "都市异能+悬疑脑洞",
+    "genre_tags": {
+      "route": [
+        "都市异能",
+        "悬疑脑洞"
+      ],
+      "trope": [],
+      "format": [],
+      "templates": [
+        "都市异能",
+        "悬疑脑洞"
+      ]
+    },
+    "created_at": "2026-06-22",
+    "target_words": 1500000,
+    "target_chapters": 500,
+    "golden_finger_name": "",
+    "golden_finger_type": "",
+    "golden_finger_style": "",
+    "core_selling_points": "物品残留的最后一句真话,单元都市谜案串联主线,能力使用会丢失自身记忆,急救调度员的城市群像视角",
+    "protagonist_structure": "",
+    "heroine_config": "",
+    "heroine_names": "",
+    "heroine_role": "",
+    "co_protagonists": "",
+    "co_protagonist_roles": "",
+    "antagonist_tiers": "",
+    "world_scale": "",
+    "factions": "",
+    "power_system_type": "",
+    "social_class": "",
+    "resource_distribution": "",
+    "gf_visibility": "",
+    "gf_irreversible_cost": "",
+    "target_reader": "",
+    "platform": "番茄小说",
+    "currency_system": "",
+    "currency_exchange": "",
+    "sect_hierarchy": "",
+    "cultivation_chain": "",
+    "cultivation_subtiers": ""
+  },
+  "progress": {
+    "current_chapter": 2,
+    "total_words": 5164,
+    "last_updated": "2026-06-22 18:17:02",
+    "volumes_completed": [],
+    "current_volume": 1,
+    "volumes_planned": [
+      {
+        "volume": 1,
+        "chapters_range": "1-40",
+        "planned_at": "2026-06-22"
+      }
+    ],
+    "chapter_status": {
+      "1": "chapter_committed",
+      "2": "chapter_committed"
+    }
+  },
+  "protagonist_state": {
+    "name": "陈默",
+    "power": {
+      "realm": "",
+      "layer": 1,
+      "bottleneck": ""
+    },
+    "location": {
+      "current": "临江市120急救调度中心",
+      "last_chapter": 0
+    },
+    "golden_finger": {
+      "name": "零点回声",
+      "level": 1,
+      "cooldown": 0,
+      "skills": []
+    },
+    "attributes": {}
+  },
+  "relationships": {},
+  "disambiguation_warnings": [],
+  "disambiguation_pending": [],
+  "world_settings": {
+    "power_system": [],
+    "factions": [],
+    "locations": []
+  },
+  "plot_threads": {
+    "active_threads": [],
+    "foreshadowing": []
+  },
+  "review_checkpoints": [],
+  "chapter_meta": {},
+  "strand_tracker": {
+    "last_quest_chapter": 0,
+    "last_fire_chapter": 0,
+    "last_constellation_chapter": 0,
+    "current_dominant": "quest",
+    "chapters_since_switch": 0,
+    "history": []
+  },
+  "entity_state": {
+    "chen_mo": {
+      "location": {
+        "current": "临江市120急救调度中心"
+      },
+      "golden_finger": {
+        "name": "零点回声"
+      }
+    },
+    "陈默": {
+      "location": {
+        "current": "值班室"
+      }
+    },
+    "儿童手表": {
+      "possession_status": "周启明公文包"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "batch_size": 5,
+  "max_revisions_per_chapter": 1,
+  "max_consecutive_failures": 2,
+  "timeout_minutes_per_chapter": 45,
+  "codex_model": "gpt-5.5",
+  "sandbox": "workspace-write",
+  "ephemeral_sessions": false,
+  "stop_on_halted": true
+}

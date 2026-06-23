@@ -1,0 +1,43 @@
+{
+  "meta": {
+    "schema_version": "story-system/v1",
+    "contract_type": "CHAPTER_BRIEF",
+    "generator_version": "outline_extractor",
+    "chapter": 3
+  },
+  "override_allowed": {
+    "chapter_focus": "陈默核验妹妹号码状态和自己三年前记录。"
+  },
+  "chapter_directive": {
+    "time_anchor": "6月22日08:30，通信营业厅与陈默住处。",
+    "chapter_span": "4小时。",
+    "countdown": "手表回收 D-3。",
+    "goal": "陈默核验妹妹号码状态和自己三年前记录。",
+    "strand": "Quest。",
+    "antagonist_tier": "孟骁安排人确认陈默行程。",
+    "key_entities": [
+      "陈曦号码",
+      "调班记录",
+      "旧备忘录"
+    ],
+    "chapter_end_open_question": "谁替陈默留下了调班记录。",
+    "cbn": "陈默 | 追查 | 停机号码状态",
+    "cpns": [
+      "营业厅记录 | 证明 | 号码三年前已停机",
+      "陈默 | 翻找 | 三年前旧备忘录",
+      "调班记录 | 显示 | 陈默事故当晚在岗",
+      "公交票 | 指向 | 河西旧表厂"
+    ],
+    "cen": "陈默 | 获得 | 河西旧表厂线索",
+    "must_cover_nodes": [
+      "CBN",
+      "调班记录 | 显示 | 陈默事故当晚在岗",
+      "CEN"
+    ],
+    "forbidden_zones": [
+      "不得确认调班记录伪造者",
+      "不得让陈默恢复事故夜记忆。"
+    ],
+    "source": "chapter_outline"
+  }
+}

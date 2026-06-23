@@ -1,0 +1,17 @@
+{
+  "meta": {
+    "schema_version": "story-system/v1",
+    "contract_type": "REVIEW_CONTRACT",
+    "generator_version": "outline_extractor",
+    "chapter": 3
+  },
+  "must_cover_nodes": [
+    "CBN",
+    "调班记录 | 显示 | 陈默事故当晚在岗",
+    "CEN"
+  ],
+  "blocking_rules": [
+    "不得确认调班记录伪造者",
+    "不得让陈默恢复事故夜记忆。"
+  ]
+}

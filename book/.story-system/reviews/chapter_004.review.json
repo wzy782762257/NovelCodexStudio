@@ -1,0 +1,17 @@
+{
+  "meta": {
+    "schema_version": "story-system/v1",
+    "contract_type": "REVIEW_CONTRACT",
+    "generator_version": "outline_extractor",
+    "chapter": 4
+  },
+  "must_cover_nodes": [
+    "CBN",
+    "陈默 | 发现 | 手表背面维修刻痕",
+    "CEN"
+  ],
+  "blocking_rules": [
+    "不得让能力升级到追问",
+    "不得暴露投递者正脸。"
+  ]
+}

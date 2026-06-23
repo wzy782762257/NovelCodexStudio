@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>单章工作区 - Novel Codex Studio</title>
+  <link rel="stylesheet" href="/css/common.css">
+  <style>
+    .chapter-layout { display: grid; grid-template-columns: 1fr 340px; gap: 20px; height: calc(100vh - var(--topbar-height) - 40px); }
+    .editor-panel { display: flex; flex-direction: column; background: var(--paper); color: var(--ink); border-radius: 10px; overflow: hidden; }
+    .editor-toolbar { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; background: #f0e8d8; border-bottom: 1px solid #d4c9b8; }
+    .editor-toolbar-left { display: flex; gap: 8px; align-items: center; }
+    .editor-toolbar button { background: none; border: none; color: #5b574f; font-size: 13px; cursor: pointer; padding: 4px 8px; border-radius: 4px; }
+    .editor-toolbar button:hover { background: rgba(0,0,0,0.05); }
+    .editor-content { flex: 1; overflow: auto; padding: 24px 32px; font-family: 'Noto Serif SC', serif; }
+    .editor-content h1 { text-align: center; font-size: 22px; margin-bottom: 8px; letter-spacing: 0.04em; }
+    .editor-content .subtitle { text-align: center; color: #5b574f; font-size: 13px; margin-bottom: 24px; }
+    .editor-content .paragraph { display: grid; grid-template-columns: 28px 1fr; gap: 12px; margin-bottom: 10px; align-items: start; }
+    .editor-content .paragraph-number { color: #a59c8c; font-size: 9px; padding-top: 6px; text-align: right; font-family: 'Noto Sans SC', sans-serif; }
+    .editor-content .paragraph-text { margin: 0; padding: 6px 10px; font-size: 14px; line-height: 1.9; outline: none; border-radius: 4px; transition: background 0.2s; min-height: 1.5em; }
+    .editor-content .paragraph-text:hover { background: rgba(176,151,105,0.08); }
+    .editor-content .paragraph-text:focus { background: #fff9e9; box-shadow: 0 0 0 1px #d6b260; }
+    .side-panel { display: flex; flex-direction: column; gap: 16px; overflow: auto; }
+    .side-card { background: var(--panel); border: 1px solid var(--line-subtle); border-radius: 10px; padding: 16px; }
+    .side-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+    .review-section { margin-bottom: 12px; }
+    .review-section h4 { font-size: 12px; color: var(--text-tertiary); margin-bottom: 6px; }
+    .review-score { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .review-score span { font-size: 12px; color: var(--text-secondary); flex: 1; }
+    .review-score .bar { width: 80px; height: 4px; background: var(--line-subtle); border-radius: 2px; }
+    .review-score .fill { height: 100%; border-radius: 2px; }
+    .action-buttons { display: flex; gap: 8px; margin-top: 16px; }
+    .action-buttons .btn { flex: 1; justify-content: center; }
+    .trace-mini { font-size: 12px; color: var(--text-tertiary); }
+    .trace-mini .trace-step { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line-subtle); }
+    .trace-mini .trace-step:last-child { border-bottom: none; }
+    .trace-mini .step-icon { width: 16px; height: 16px; border-radius: 50%; display: grid; place-items: center; font-size: 10px; }
+    .trace-mini .step-icon.ok { background: rgba(52,199,134,0.15); color: var(--green); }
+    .trace-mini .step-icon.fail { background: rgba(227,77,77,0.15); color: var(--red); }
+    .trace-mini .step-icon.pending { background: var(--line-subtle); color: var(--text-tertiary); }
+    .nav-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--line-subtle); margin-bottom: 16px; }
+    .nav-tab { padding: 8px 16px; font-size: 12px; color: var(--text-tertiary); cursor: pointer; border-bottom: 2px solid transparent; }
+    .nav-tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+    .contract-panel { font-size: 12px; color: var(--text-secondary); line-height: 1.7; }
+    .contract-panel ul { padding-left: 16px; margin-top: 8px; }
+    .contract-panel li { margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+  <div class="app-frame">
+    <nav class="side-nav">
+      <div class="nav-brand">◆</div>
+      <a href="/" class="nav-item"><span class="icon">💡</span><span class="label">选题</span></a>
+      <a href="/foundation.html" class="nav-item"><span class="icon">🏗</span><span class="label">框架</span></a>
+      <a href="/outline.html" class="nav-item"><span class="icon">📋</span><span class="label">大纲</span></a>
+      <a href="/dashboard.html" class="nav-item"><span class="icon">📊</span><span class="label">指挥</span></a>
+      <a href="/pipeline.html" class="nav-item"><span class="icon">⚙</span><span class="label">流水线</span></a>
+      <a href="/issues.html" class="nav-item"><span class="icon">⚠</span><span class="label">问题</span></a>
+      <a href="/export.html" class="nav-item"><span class="icon">📤</span><span class="label">导出</span></a>
+      <div class="nav-spacer"></div>
+      <a href="/settings.html" class="nav-item"><span class="icon">⚙</span><span class="label">设置</span></a>
+    </nav>
+
+    <div class="main-content">
+      <header class="topbar">
+        <div class="topbar-left">
+          <span class="breadcrumb"><strong>单章工作区</strong> / <span id="chapter-breadcrumb">第 1 章</span></span>
+        </div>
+        <div class="topbar-right">
+          <span class="engine-status idle" id="engine-status-badge"><span class="dot"></span>待机</span>
+        </div>
+      </header>
+
+      <div class="page-content" style="padding: 12px 20px;">
+        <div class="chapter-layout">
+          <!-- Editor -->
+          <div class="editor-panel">
+            <div class="editor-toolbar">
+              <div class="editor-toolbar-left">
+                <button onclick="toggleView('write')">✎ 写作</button>
+                <button onclick="toggleView('read')">👁 阅读</button>
+                <span style="color: #d4c9b8;">|</span>
+                <button onclick="saveContent()">💾 保存</button>
+              </div>
+              <div style="font-size: 12px; color: #5b574f;">
+                字数: <strong id="word-count">0</strong>
+              </div>
+            </div>
+            <div class="editor-content" id="editor-content">
+              <h1 id="chapter-title">第0001章</h1>
+              <p class="subtitle" id="chapter-subtitle">加载中...</p>
+              <div id="paragraphs"></div>
+            </div>
+          </div>
+
+          <!-- Side Panel -->
+          <div class="side-panel">
+            <!-- Actions -->
+            <div class="side-card">
+              <h3>操作</h3>
+              <div class="action-buttons">
+                <button class="btn btn-primary" id="btn-generate" onclick="generateChapter()">▶ 生成</button>
+                <button class="btn btn-success" id="btn-approve" onclick="approveChapter()" style="display:none;">✓ 批准</button>
+              </div>
+              <div class="action-buttons" style="margin-top: 8px;">
+                <button class="btn btn-ghost" onclick="regenerateChapter()">⟳ 重跑</button>
+                <button class="btn btn-danger" onclick="rejectChapter()">✗ 退回</button>
+              </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="side-card">
+              <div class="nav-tabs">
+                <div class="nav-tab active" data-tab="review">审查</div>
+                <div class="nav-tab" data-tab="contract">契约</div>
+                <div class="nav-tab" data-tab="trace">轨迹</div>
+              </div>
+
+              <div id="tab-review">
+                <div class="review-section">
+                  <h4>质量评分</h4>
+                  <div class="review-score"><span>剧情推进</span><div class="bar"><div class="fill" style="width:90%;background:var(--green)"></div></div><span>90</span></div>
+                  <div class="review-score"><span>角色一致</span><div class="bar"><div class="fill" style="width:85%;background:var(--green)"></div></div><span>85</span></div>
+                  <div class="review-score"><span>连续性</span><div class="bar"><div class="fill" style="width:88%;background:var(--green)"></div></div><span>88</span></div>
+                  <div class="review-score"><span>节奏</span><div class="bar"><div class="fill" style="width:92%;background:var(--green)"></div></div><span>92</span></div>
+                  <div class="review-score"><span>钩子</span><div class="bar"><div class="fill" style="width:95%;background:var(--green)"></div></div><span>95</span></div>
+                  <div class="review-score"><span>自然度</span><div class="bar"><div class="fill" style="width:90%;background:var(--green)"></div></div><span>90</span></div>
+                </div>
+                <div class="review-section">
+                  <h4>AI痕迹检查</h4>
+                  <div style="font-size: 12px; color: var(--green);">✓ 通过 - 未发现明显AI痕迹</div>
+                </div>
+                <div class="review-section">
+                  <h4>Nacharium 审查</h4>
+                  <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
+                    编辑: 叙事紧凑，对话有效推进信息<br>
+                    批评: 第3段可再压缩<br>
+                    读者: 钩子有效，想继续读<br>
+                    工程师: 无AI痕迹<br>
+                    连续性: 与第1章衔接自然
+                  </div>
+                </div>
+              </div>
+
+              <div id="tab-contract" style="display:none;">
+                <div class="contract-panel">
+                  <strong>章节契约</strong>
+                  <ul>
+                    <li>OPN: 陈默接到异常电话，发现旧儿童手表</li>
+                    <li>CBN: 建立本章核心悬念</li>
+                    <li>Plot Point A: 手表背面有妹妹名字的刻痕</li>
+                    <li>Emotion Bead: 冷静下的恐惧</li>
+                    <li>Scene: 急救中心值班室</li>
+                    <li>Character: 陈默、苏岚（电话提及）</li>
+                    <li>CEN: 陈默决定保留手表</li>
+                    <li>CEQ: 手表为什么有妹妹的名字？</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div id="tab-trace" style="display:none;">
+                <div class="trace-mini">
+                  <div class="trace-step"><span class="step-icon ok">✓</span><span>契约提取</span></div>
+                  <div class="trace-step"><span class="step-icon ok">✓</span><span>上下文打包</span></div>
+                  <div class="trace-step"><span class="step-icon ok">✓</span><span>Prewrite</span></div>
+                  <div class="trace-step"><span class="step-icon ok">✓</span><span>正文生成</span></div>
+                  <div class="trace-step"><span class="step-icon ok">✓</span><span>质量审查</span></div>
+                  <div class="trace-step"><span class="step-icon ok">✓</span><span>修订</span></div>
+                  <div class="trace-step"><span class="step-icon ok">✓</span><span>Fulfillment</span></div>
+                  <div class="trace-step"><span class="step-icon ok">✓</span><span>Commit</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/common.js"></script>
+  <script>
+    const { api, showToast, qs, qsa, on } = window.NCS;
+    const urlParams = new URLSearchParams(window.location.search);
+    const chapterNum = parseInt(urlParams.get('n')) || 1;
+    let currentContent = '';
+
+    async function init() {
+      await loadChapter(chapterNum);
+      setupTabs();
+    }
+
+    async function loadChapter(n) {
+      try {
+        const data = await api('GET', `/chapters/${n}`);
+        currentContent = data.content || '';
+        renderContent(currentContent);
+        qs('#chapter-breadcrumb').textContent = `第 ${n} 章`;
+        qs('#chapter-title').textContent = `第${String(n).padStart(4, '0')}章`;
+        qs('#chapter-subtitle').textContent = data.title || `第${n}章`;
+        
+        // Update buttons based on status
+        if (data.status === 'committed') {
+          qs('#btn-generate').style.display = 'none';
+          qs('#btn-approve').style.display = 'none';
+        } else if (data.status === 'pending') {
+          qs('#btn-generate').style.display = 'inline-flex';
+          qs('#btn-approve').style.display = 'none';
+        } else {
+          qs('#btn-generate').style.display = 'none';
+          qs('#btn-approve').style.display = 'inline-flex';
+        }
+      } catch (e) {
+        // 模拟内容
+        currentContent = `凌晨零点零三分，陈默接到了妹妹的求救电话。\n\n问题是，陈曦已经死了三年。\n\n电话刚接进临江市急救中心时，陈默并不知道是她。\n\n耳机里只有一个女人急促的呼吸声。她像躲在很窄的地方，说话时一直压着嗓子。\n\n"救救他……他流了好多血。"\n\n陈默坐直身体，手指落在键盘上。\n\n"这里是120。告诉我地址，伤者哪里受伤？"\n\n"河西旧表厂，六栋。"\n\n"几单元？"\n\n女人没有回答。\n\n电话那头传来一声巨响，像有人踹开了铁门。`;
+        renderContent(currentContent);
+      }
+    }
+
+    function renderContent(text) {
+      const container = qs('#paragraphs');
+      container.innerHTML = '';
+      const lines = text.split('\n').filter(l => l.trim() && !l.trim().startsWith('#'));
+      
+      lines.forEach((line, i) => {
+        const div = document.createElement('div');
+        div.className = 'paragraph';
+        div.innerHTML = `<span class="paragraph-number">¶${i+1}</span><p class="paragraph-text" contenteditable="true">${line}</p>`;
+        container.appendChild(div);
+      });
+
+      updateWordCount();
+    }
+
+    function updateWordCount() {
+      const text = Array.from(qsa('.paragraph-text')).map(p => p.textContent).join('');
+      const chineseChars = (text.match(/[\u3400-\u9fff]/g) || []).length;
+      qs('#word-count').textContent = chineseChars.toLocaleString();
+    }
+
+    // Auto-count on edit
+    document.addEventListener('input', updateWordCount);
+
+    async function saveContent() {
+      const paragraphs = Array.from(qsa('.paragraph-text')).map(p => p.textContent);
+      const content = paragraphs.join('\n');
+      try {
+        await api('PUT', `/chapters/${chapterNum}/content`, { content });
+        showToast('已保存', 'success');
+      } catch (e) {
+        showToast('保存失败', 'error');
+      }
+    }
+
+    function generateChapter() {
+      api('POST', '/engine/start', { chapter: chapterNum }).then(r => {
+        if (r.ok) showToast(`第 ${chapterNum} 章生成任务已启动`, 'success');
+        else showToast(r.error, 'error');
+      });
+    }
+
+    function approveChapter() {
+      api('POST', `/chapters/${chapterNum}/approve`).then(() => {
+        showToast('已批准', 'success');
+      });
+    }
+
+    function regenerateChapter() {
+      api('POST', '/engine/start', { chapter: chapterNum }).then(r => {
+        if (r.ok) showToast(`第 ${chapterNum} 章重跑任务已启动`, 'success');
+        else showToast(r.error, 'error');
+      });
+    }
+
+    function rejectChapter() {
+      api('POST', `/chapters/${chapterNum}/reject`).then(() => {
+        showToast('已退回', 'info');
+      });
+    }
+
+    function toggleView(mode) {
+      const content = qs('#editor-content');
+      if (mode === 'read') {
+        content.style.background = '#f8f4eb';
+        qsa('.paragraph-text').forEach(p => p.contentEditable = 'false');
+      } else {
+        content.style.background = '';
+        qsa('.paragraph-text').forEach(p => p.contentEditable = 'true');
+      }
+    }
+
+    function setupTabs() {
+      qsa('.nav-tab').forEach(tab => {
+        on(tab, 'click', () => {
+          qsa('.nav-tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          qsa('#tab-review, #tab-contract, #tab-trace').forEach(el => el.style.display = 'none');
+          qs(`#tab-${tab.dataset.tab}`).style.display = 'block';
+        });
+      });
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        saveContent();
+      }
+    });
+
+    init();
+  </script>
+</body>
+</html>

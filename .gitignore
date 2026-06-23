@@ -1,0 +1,28 @@
+.venv/
+__pycache__/
+*.pyc
+config.json
+book/.novel-supervisor/logs/
+book/.novel-supervisor/lock
+
+# macOS
+.DS_Store
+
+# Testing
+.coverage
+.pytest_cache/
+
+
+# Platform runtime data
+book/.novel-supervisor/checkpoint.json
+book/.novel-supervisor/logs/
+
+# Third-party dependencies
+vendor/
+
+# macOS
+.DS_Store
+
+# Testing artifacts
+.coverage
+.pytest_cache/

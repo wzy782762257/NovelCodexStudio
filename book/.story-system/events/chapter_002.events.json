@@ -1,0 +1,42 @@
+[
+  {
+    "event_id": "evt-ch002-001",
+    "chapter": 2,
+    "event_type": "open_loop_created",
+    "subject": "录音异常",
+    "payload": {
+      "content": "陈默发现编号0622-0001录音被人工编辑过，4000Hz频段有整齐断口",
+      "unanswered_question": "谁篡改了录音？为什么针对'三院'？"
+    }
+  },
+  {
+    "event_id": "evt-ch002-002",
+    "chapter": 2,
+    "event_type": "open_loop_created",
+    "subject": "儿童手表",
+    "payload": {
+      "content": "已锁柜的儿童手表突然收到消息，表壳颜色与记忆不符但裂痕一致",
+      "unanswered_question": "手表真实来源？为何会收到消息？"
+    }
+  },
+  {
+    "event_id": "evt-ch002-003",
+    "chapter": 2,
+    "event_type": "open_loop_created",
+    "subject": "三院记录",
+    "payload": {
+      "content": "系统显示三个月前另有录音警告'别相信三院的ECMO'，妹妹死亡证明由三院签发但签名被涂改",
+      "unanswered_question": "三院与多起异常事件关联？签名被谁涂改？"
+    }
+  },
+  {
+    "event_id": "evt-ch002-004",
+    "chapter": 2,
+    "event_type": "open_loop_created",
+    "subject": "神秘信息",
+    "payload": {
+      "content": "未知号码发来监控照片和警告'他们在钓你'，显示有人雨中监视调度中心",
+      "unanswered_question": "发信人身份？监视者目的？"
+    }
+  }
+]

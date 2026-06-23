@@ -1,0 +1,203 @@
+{
+  "meta": {
+    "schema_version": "story-system/v1",
+    "chapter": 2,
+    "status": "accepted"
+  },
+  "contract_refs": {
+    "master": "MASTER_SETTING.json",
+    "volume": "volume_001.json",
+    "chapter": "chapter_002.json",
+    "review": "chapter_002.review.json"
+  },
+  "provenance": {
+    "write_fact_role": "chapter_commit",
+    "projection_role": "derived_read_models",
+    "legacy_state_role": "projection_only"
+  },
+  "outline_snapshot": {
+    "planned_nodes": [],
+    "covered_nodes": [],
+    "missed_nodes": [],
+    "extra_nodes": []
+  },
+  "review_result": {
+    "blocking_count": 0,
+    "issues": [
+      "周启明休班却突然出现的情节需要更多铺垫",
+      "儿童手表颜色变化与裂痕一致性的细节需要更明确解释",
+      "部分技术术语（如近场通讯芯片）可能需要更通俗化处理"
+    ],
+    "issues_count": 3,
+    "has_blocking": false,
+    "summary": "本章在悬念铺设和技术细节处理上表现出色，成功构建了紧张氛围并埋下多个关键伏笔。人物行为基本符合设定，但部分细节需要更严谨的处理。结尾多重悬念叠加的设计极具追读吸引力。"
+  },
+  "fulfillment_result": {
+    "planned_nodes": [],
+    "covered_nodes": [],
+    "missed_nodes": [],
+    "extra_nodes": []
+  },
+  "disambiguation_result": {
+    "pending": []
+  },
+  "extraction_result": {
+    "accepted_events": [
+      {
+        "event_id": "evt-ch002-001",
+        "chapter": 2,
+        "event_type": "open_loop_created",
+        "subject": "录音异常",
+        "payload": {
+          "content": "陈默发现编号0622-0001录音被人工编辑过，4000Hz频段有整齐断口",
+          "unanswered_question": "谁篡改了录音？为什么针对'三院'？"
+        }
+      },
+      {
+        "event_id": "evt-ch002-002",
+        "chapter": 2,
+        "event_type": "open_loop_created",
+        "subject": "儿童手表",
+        "payload": {
+          "content": "已锁柜的儿童手表突然收到消息，表壳颜色与记忆不符但裂痕一致",
+          "unanswered_question": "手表真实来源？为何会收到消息？"
+        }
+      },
+      {
+        "event_id": "evt-ch002-003",
+        "chapter": 2,
+        "event_type": "open_loop_created",
+        "subject": "三院记录",
+        "payload": {
+          "content": "系统显示三个月前另有录音警告'别相信三院的ECMO'，妹妹死亡证明由三院签发但签名被涂改",
+          "unanswered_question": "三院与多起异常事件关联？签名被谁涂改？"
+        }
+      },
+      {
+        "event_id": "evt-ch002-004",
+        "chapter": 2,
+        "event_type": "open_loop_created",
+        "subject": "神秘信息",
+        "payload": {
+          "content": "未知号码发来监控照片和警告'他们在钓你'，显示有人雨中监视调度中心",
+          "unanswered_question": "发信人身份？监视者目的？"
+        }
+      }
+    ],
+    "state_deltas": [
+      {
+        "entity_id": "陈默",
+        "field": "location.current",
+        "old": "录音复核室",
+        "new": "值班室"
+      },
+      {
+        "entity_id": "儿童手表",
+        "field": "possession_status",
+        "old": "储物柜",
+        "new": "周启明公文包"
+      }
+    ],
+    "entity_deltas": [
+      {
+        "entity_id": "赵一鸣",
+        "action": "upsert",
+        "entity_type": "角色",
+        "payload": {
+          "name": "赵一鸣",
+          "特征": [
+            "戴NF-107芯片智能表",
+            "知晓陈默异常行为"
+          ]
+        }
+      },
+      {
+        "entity_id": "周启明",
+        "action": "upsert",
+        "entity_type": "角色",
+        "payload": {
+          "name": "周启明",
+          "特征": [
+            "反常加班",
+            "使用特殊编号B-17",
+            "阻止陈默调查"
+          ]
+        }
+      }
+    ],
+    "entities_appeared": [
+      {
+        "id": "神秘监视者",
+        "type": "未知",
+        "mentions": [
+          "穿连帽衫的人影"
+        ],
+        "confidence": 0.9
+      },
+      {
+        "id": "认领人",
+        "type": "未知",
+        "mentions": [
+          "自称孩子家长"
+        ],
+        "confidence": 0.7
+      }
+    ],
+    "scenes": [
+      {
+        "index": 1,
+        "start_line": 1,
+        "end_line": 10,
+        "location": "录音复核室",
+        "summary": "陈默分析异常录音，发现女孩求救提及'三院'的片段被人工删除",
+        "characters": [
+          "陈默"
+        ]
+      },
+      {
+        "index": 2,
+        "start_line": 11,
+        "end_line": 20,
+        "location": "录音复核室",
+        "summary": "赵一鸣突然出现，暗示陈默精神状态有问题，透露手表能收短信",
+        "characters": [
+          "陈默",
+          "赵一鸣"
+        ]
+      },
+      {
+        "index": 3,
+        "start_line": 21,
+        "end_line": 30,
+        "location": "值班室",
+        "summary": "周启明警告陈默停止调查，展示被涂改的死亡证明，准备移交手表",
+        "characters": [
+          "陈默",
+          "周启明"
+        ]
+      },
+      {
+        "index": 4,
+        "start_line": 31,
+        "end_line": 40,
+        "location": "走廊/停车场",
+        "summary": "陈默发现监视者，收到匿名警告，目睹周启明反常返回",
+        "characters": [
+          "陈默",
+          "周启明",
+          "神秘监视者"
+        ]
+      }
+    ],
+    "chapter_meta": {},
+    "dominant_strand": "",
+    "summary_text": "凌晨的调度中心，陈默在复核异常求救录音时发现涉及'三院'的片段被人为删除。同时锁在柜中的儿童手表离奇收到消息，表壳特征与妹妹遗物部分吻合。调查显示系统内另有警告三院的异常记录，妹妹死亡证明上的签名被涂改。赵一鸣暗示陈默精神异常，周启明反常加班并急于移交手表。陈默收到匿名警告称'他们在钓你'，发现有人雨中监视大楼，并在储物柜旁找到赵一鸣同款通讯芯片。当周启明突然返回停车场时，储物柜方向传来异响，显示多方势力在争夺这块神秘手表。"
+  },
+  "projection_status": {
+    "state": "pending",
+    "index": "pending",
+    "summary": "pending",
+    "memory": "pending",
+    "vector": "pending"
+  }
+}

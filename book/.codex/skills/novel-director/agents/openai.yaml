@@ -1,0 +1,4 @@
+interface:
+  display_name: "长篇小说总编"
+  short_description: "监督长篇小说的连续创作、质量审查、自动返工与安全提交"
+  default_prompt: "使用 $novel-director 继续创作下一章，并在通过质量门后提交。"

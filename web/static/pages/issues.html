@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>问题中心 - Novel Codex Studio</title>
+  <link rel="stylesheet" href="/css/common.css">
+  <style>
+    .issue-layout { display: grid; grid-template-columns: 1fr 380px; gap: 20px; }
+    .issue-list { display: flex; flex-direction: column; gap: 12px; }
+    .issue-card { background: var(--panel); border: 1px solid var(--line-subtle); border-radius: 10px; padding: 16px; cursor: pointer; transition: all 0.15s ease; }
+    .issue-card:hover { border-color: var(--line); }
+    .issue-card.selected { border-color: var(--blue); box-shadow: 0 0 0 1px rgba(52,135,255,0.2); }
+    .issue-card.resolved { opacity: 0.6; border-color: var(--green); }
+    .issue-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .issue-title { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+    .issue-level { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+    .issue-level.high { background: rgba(227,77,77,0.15); color: var(--red); }
+    .issue-level.medium { background: rgba(225,170,63,0.15); color: var(--amber); }
+    .issue-level.low { background: rgba(52,135,255,0.15); color: var(--blue); }
+    .issue-meta { font-size: 12px; color: var(--text-tertiary); margin-bottom: 8px; }
+    .issue-body { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+    .issue-detail-panel { background: var(--panel); border: 1px solid var(--line-subtle); border-radius: 10px; padding: 20px; position: sticky; top: 20px; }
+    .issue-detail-panel h3 { font-size: 16px; margin-bottom: 16px; }
+    .issue-detail-panel .detail-section { margin-bottom: 16px; }
+    .issue-detail-panel .detail-label { font-size: 11px; color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 4px; }
+    .issue-detail-panel .detail-value { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+    .issue-actions { display: flex; gap: 8px; margin-top: 20px; }
+    .resolution-textarea { width: 100%; min-height: 80px; margin-top: 12px; }
+    .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--line-subtle); margin-bottom: 20px; }
+    .tab { padding: 10px 20px; font-size: 13px; color: var(--text-tertiary); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s ease; }
+    .tab:hover { color: var(--text-primary); }
+    .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--text-tertiary); }
+    .empty-state .icon { font-size: 48px; margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+  <div class="app-frame">
+    <nav class="side-nav">
+      <div class="nav-brand">◆</div>
+      <a href="/" class="nav-item"><span class="icon">💡</span><span class="label">选题</span></a>
+      <a href="/foundation.html" class="nav-item"><span class="icon">🏗</span><span class="label">框架</span></a>
+      <a href="/outline.html" class="nav-item"><span class="icon">📋</span><span class="label">大纲</span></a>
+      <a href="/dashboard.html" class="nav-item"><span class="icon">📊</span><span class="label">指挥</span></a>
+      <a href="/pipeline.html" class="nav-item"><span class="icon">⚙</span><span class="label">流水线</span></a>
+      <a href="/issues.html" class="nav-item active"><span class="icon">⚠</span><span class="label">问题</span></a>
+      <a href="/export.html" class="nav-item"><span class="icon">📤</span><span class="label">导出</span></a>
+      <div class="nav-spacer"></div>
+      <a href="/settings.html" class="nav-item"><span class="icon">⚙</span><span class="label">设置</span></a>
+    </nav>
+
+    <div class="main-content">
+      <header class="topbar">
+        <div class="topbar-left">
+          <span class="breadcrumb"><strong>问题中心</strong> / 决策队列</span>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <div class="page-header">
+          <h1>问题中心</h1>
+          <p>集中处理所有需要作者决策的问题，不分页面不弹窗</p>
+        </div>
+
+        <div class="tabs">
+          <div class="tab active" data-tab="pending">待处理</div>
+          <div class="tab" data-tab="resolved">已解决</div>
+        </div>
+
+        <div class="issue-layout">
+          <div class="issue-list" id="issue-list"></div>
+          <div class="issue-detail-panel" id="issue-detail">
+            <div class="empty-state">
+              <div class="icon">📋</div>
+              <p>选择一个问题查看详情</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/common.js"></script>
+  <script>
+    const { api, showToast, qs, qsa, on, formatDate } = window.NCS;
+
+    let issues = { pending: [], resolved: [] };
+    let currentTab = 'pending';
+    let selectedIssue = null;
+
+    async function init() {
+      await loadIssues();
+      renderIssueList();
+      setupTabs();
+    }
+
+    async function loadIssues() {
+      try {
+        issues = await api('GET', '/issues');
+      } catch (e) {
+        // 模拟数据
+        issues = {
+          pending: [
+            { id: 'issue-1', level: '高', title: '遗漏节点: CBN, CEN', chapter: 4, body: '第4章在Fulfillment检查中遗漏了CBN（Chapter Begin Node）和CEN（Chapter End Node），导致章节结构不完整。', created_at: Date.now() / 1000 - 3600 },
+            { id: 'issue-2', level: '中', title: 'postcommit failed: projection vector', chapter: 1, body: 'embedding storage could not connect to api-inference.modelscope.cn under the current no-network run.', created_at: Date.now() / 1000 - 7200 },
+          ],
+          resolved: [],
+        };
+      }
+    }
+
+    function renderIssueList() {
+      const list = qs('#issue-list');
+      const items = issues[currentTab] || [];
+
+      if (items.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <div class="icon">✅</div>
+            <p>暂无${currentTab === 'pending' ? '待处理' : '已解决'}的问题</p>
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = '';
+      items.forEach(issue => {
+        const card = document.createElement('div');
+        card.className = `issue-card ${issue.id === selectedIssue?.id ? 'selected' : ''} ${currentTab === 'resolved' ? 'resolved' : ''}`;
+        card.innerHTML = `
+          <div class="issue-header">
+            <span class="issue-title">${issue.title}</span>
+            <span class="issue-level ${issue.level === '高' ? 'high' : issue.level === '中' ? 'medium' : 'low'}">${issue.level}</span>
+          </div>
+          <div class="issue-meta">第 ${issue.chapter} 章 · ${formatDate(issue.created_at * 1000)}</div>
+          <div class="issue-body">${issue.body.substring(0, 100)}${issue.body.length > 100 ? '...' : ''}</div>
+        `;
+        card.addEventListener('click', () => selectIssue(issue));
+        list.appendChild(card);
+      });
+    }
+
+    function selectIssue(issue) {
+      selectedIssue = issue;
+      renderIssueList();
+      renderIssueDetail(issue);
+    }
+
+    function renderIssueDetail(issue) {
+      const panel = qs('#issue-detail');
+      panel.innerHTML = `
+        <h3>${issue.title}</h3>
+        <div class="detail-section">
+          <div class="detail-label">严重程度</div>
+          <div class="detail-value">
+            <span class="issue-level ${issue.level === '高' ? 'high' : issue.level === '中' ? 'medium' : 'low'}">${issue.level}</span>
+          </div>
+        </div>
+        <div class="detail-section">
+          <div class="detail-label">关联章节</div>
+          <div class="detail-value">第 ${issue.chapter} 章</div>
+        </div>
+        <div class="detail-section">
+          <div class="detail-label">创建时间</div>
+          <div class="detail-value">${formatDate(issue.created_at * 1000)}</div>
+        </div>
+        <div class="detail-section">
+          <div class="detail-label">问题详情</div>
+          <div class="detail-value">${issue.body}</div>
+        </div>
+        ${currentTab === 'pending' ? `
+          <div class="detail-section">
+            <div class="detail-label">处理方案</div>
+            <textarea class="resolution-textarea" id="resolution-text" placeholder="输入处理方案..."></textarea>
+          </div>
+          <div class="issue-actions">
+            <button class="btn btn-primary" onclick="resolveIssue()">标记为已解决</button>
+            <button class="btn btn-ghost" onclick="openChapter(${issue.chapter})">跳转到章节</button>
+          </div>
+        ` : `
+          <div class="detail-section">
+            <div class="detail-label">解决方案</div>
+            <div class="detail-value">${issue.resolution || '未记录'}</div>
+          </div>
+        `}
+      `;
+    }
+
+    function setupTabs() {
+      qsa('.tab').forEach(tab => {
+        on(tab, 'click', () => {
+          qsa('.tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          currentTab = tab.dataset.tab;
+          selectedIssue = null;
+          renderIssueList();
+          qs('#issue-detail').innerHTML = `
+            <div class="empty-state">
+              <div class="icon">📋</div>
+              <p>选择一个问题查看详情</p>
+            </div>
+          `;
+        });
+      });
+    }
+
+    window.resolveIssue = async function() {
+      if (!selectedIssue) return;
+      const resolution = qs('#resolution-text')?.value || '';
+      try {
+        await api('POST', `/issues/${selectedIssue.id}/resolve`, { resolution });
+        showToast('问题已解决', 'success');
+        await loadIssues();
+        selectedIssue = null;
+        renderIssueList();
+        qs('#issue-detail').innerHTML = `
+          <div class="empty-state">
+            <div class="icon">📋</div>
+            <p>选择一个问题查看详情</p>
+          </div>
+        `;
+      } catch (e) {
+        showToast('处理失败', 'error');
+      }
+    };
+
+    window.openChapter = function(n) {
+      window.location.href = `/chapter.html?n=${n}`;
+    };
+
+    init();
+  </script>
+</body>
+</html>

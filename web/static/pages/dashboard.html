@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>指挥中心 - Novel Codex Studio</title>
+  <link rel="stylesheet" href="/css/common.css">
+  <style>
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    .dashboard-card {
+      background: var(--panel);
+      border: 1px solid var(--line-subtle);
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .dashboard-card.wide {
+      grid-column: span 2;
+    }
+    .dashboard-card.full {
+      grid-column: span 3;
+    }
+    .card-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-top: 8px;
+    }
+    .card-label {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .card-delta {
+      font-size: 12px;
+      margin-top: 4px;
+    }
+    .engine-panel {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    .engine-info {
+      flex: 1;
+    }
+    .engine-info h3 {
+      font-size: 15px; margin-bottom: 4px;
+    }
+    .engine-info p {
+      font-size: 13px; color: var(--text-tertiary);
+    }
+    .engine-controls {
+      display: flex; gap: 8px;
+    }
+    .progress-section {
+      margin-top: 16px;
+    }
+    .progress-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 8px;
+    }
+    .progress-bar-large {
+      height: 8px;
+      background: var(--line-subtle);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .progress-fill-large {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+    .issue-list-compact {
+      margin-top: 12px;
+    }
+    .issue-item-compact {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      margin-bottom: 6px;
+      font-size: 13px;
+      border: 1px solid var(--line-subtle);
+    }
+    .issue-item-compact.danger { border-color: rgba(227,77,77,0.3); background: rgba(227,77,77,0.05); }
+    .issue-item-compact.warning { border-color: rgba(225,170,63,0.3); background: rgba(225,170,63,0.05); }
+    .issue-item-compact .issue-icon { font-size: 14px; flex-shrink: 0; }
+    .issue-item-compact .issue-text { flex: 1; }
+    .issue-item-compact .issue-chapter { font-size: 11px; color: var(--text-tertiary); }
+    .chapter-progress {
+      display: flex; gap: 4px; margin-top: 16px; flex-wrap: wrap;
+    }
+    .chapter-dot {
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      display: grid; place-items: center;
+      font-size: 10px; font-weight: 600;
+      cursor: pointer; transition: all 0.15s ease;
+      border: 1px solid transparent;
+    }
+    .chapter-dot:hover { transform: scale(1.1); }
+    .chapter-dot.pending { background: var(--bg-elevated); color: var(--text-tertiary); border-color: var(--line-subtle); }
+    .chapter-dot.writing { background: rgba(52,135,255,0.15); color: var(--blue); border-color: rgba(52,135,255,0.3); }
+    .chapter-dot.review { background: rgba(155,103,240,0.15); color: var(--violet); border-color: rgba(155,103,240,0.3); }
+    .chapter-dot.done { background: rgba(52,199,134,0.15); color: var(--green); border-color: rgba(52,199,134,0.3); }
+    .chapter-dot.fail { background: rgba(227,77,77,0.15); color: var(--red); border-color: rgba(227,77,77,0.3); }
+    .mode-selector {
+      display: flex; gap: 8px; margin-top: 12px;
+    }
+    .mode-option {
+      flex: 1; padding: 12px; border: 1px solid var(--line-subtle);
+      border-radius: 8px; text-align: center; cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .mode-option:hover { border-color: var(--blue); }
+    .mode-option.active {
+      border-color: var(--blue); background: rgba(52,135,255,0.08);
+    }
+    .mode-option h4 { font-size: 13px; margin-bottom: 4px; }
+    .mode-option p { font-size: 11px; color: var(--text-tertiary); }
+    .log-preview {
+      font-family: 'SF Mono', monospace;
+      font-size: 11px;
+      color: var(--text-tertiary);
+      background: var(--bg-elevated);
+      padding: 12px;
+      border-radius: 6px;
+      max-height: 200px;
+      overflow: auto;
+      line-height: 1.6;
+    }
+    .log-preview div { margin-bottom: 2px; }
+    .nav-link { display: block; padding: 8px 12px; border-radius: 6px; color: var(--text-secondary); text-decoration: none; font-size: 13px; margin-bottom: 4px; transition: all 0.15s ease; }
+    .nav-link:hover { background: rgba(255,255,255,0.04); color: var(--text-primary); }
+    .nav-link.active { background: rgba(52,135,255,0.08); color: var(--blue); }
+  </style>
+</head>
+<body>
+  <div class="app-frame">
+    <!-- Side Navigation -->
+    <nav class="side-nav">
+      <div class="nav-brand">◆</div>
+      <a href="/" class="nav-item"><span class="icon">💡</span><span class="label">选题</span></a>
+      <a href="/foundation.html" class="nav-item"><span class="icon">🏗</span><span class="label">框架</span></a>
+      <a href="/outline.html" class="nav-item"><span class="icon">📋</span><span class="label">大纲</span></a>
+      <a href="/dashboard.html" class="nav-item active"><span class="icon">📊</span><span class="label">指挥</span></a>
+      <a href="/pipeline.html" class="nav-item"><span class="icon">⚙</span><span class="label">流水线</span></a>
+      <a href="/issues.html" class="nav-item"><span class="icon">⚠</span><span class="label">问题</span></a>
+      <a href="/export.html" class="nav-item"><span class="icon">📤</span><span class="label">导出</span></a>
+      <div class="nav-spacer"></div>
+      <a href="/settings.html" class="nav-item"><span class="icon">⚙</span><span class="label">设置</span></a>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <header class="topbar">
+        <div class="topbar-left">
+          <span class="breadcrumb"><strong>指挥中心</strong> / 全局状态</span>
+        </div>
+        <div class="topbar-right">
+          <span class="engine-status idle" id="engine-status-badge">
+            <span class="dot"></span>待机
+          </span>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <div class="page-header">
+          <h1>指挥中心</h1>
+          <p>全局状态、引擎控制、进度概览</p>
+        </div>
+
+        <!-- Phase Bar -->
+        <div class="phase-bar" id="phase-bar">
+          <div class="phase-step" data-phase="topic">选题</div>
+          <div class="phase-step" data-phase="foundation">框架</div>
+          <div class="phase-step" data-phase="outline">大纲</div>
+          <div class="phase-step active" data-phase="production">正文</div>
+          <div class="phase-step" data-phase="review">审查</div>
+          <div class="phase-step" data-phase="export">发布</div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="dashboard-grid">
+          <div class="dashboard-card">
+            <div class="card-label">当前阶段</div>
+            <div class="card-value" id="current-phase">正文</div>
+            <div class="card-delta text-muted">已生成 2 / 10 章</div>
+          </div>
+          <div class="dashboard-card">
+            <div class="card-label">待处理问题</div>
+            <div class="card-value" id="pending-issues">0</div>
+            <div class="card-delta text-muted">需要作者决策</div>
+          </div>
+          <div class="dashboard-card">
+            <div class="card-label">引擎状态</div>
+            <div class="card-value" id="engine-status-text" style="font-size: 22px;">待机</div>
+            <div class="card-delta text-muted" id="engine-mode">模式：全自动</div>
+          </div>
+        </div>
+
+        <!-- Engine Control Panel -->
+        <div class="dashboard-card full" style="margin-bottom: 24px;">
+          <div class="card-header">
+            <div>
+              <div class="card-title">引擎控制</div>
+              <div class="card-subtitle">配置运行模式并启动/停止引擎</div>
+            </div>
+          </div>
+          
+          <div class="mode-selector" id="mode-selector">
+            <div class="mode-option active" data-mode="auto">
+              <h4>🚀 全自动</h4>
+              <p>引擎自动推进，发现问题记录但不暂停，作者自行查看处理</p>
+            </div>
+            <div class="mode-option" data-mode="pause">
+              <h4>⏸ 暂停模式</h4>
+              <p>每章完成后自动暂停，作者审批后引擎继续运行</p>
+            </div>
+            <div class="mode-option" data-mode="manual">
+              <h4>🎮 手动模式</h4>
+              <p>每步都需手动触发，适合精细调试和干预</p>
+            </div>
+          </div>
+
+          <div class="engine-panel" style="margin-top: 20px;">
+            <div class="engine-info">
+              <h3 id="engine-current-chapter">当前章节：第 3 章</h3>
+              <p id="engine-progress-detail">进度：2/10 章已提交，1 章草稿，第 4 章排队中</p>
+            </div>
+            <div class="engine-controls">
+              <button class="btn btn-primary" id="btn-start" style="display: none;">
+                <span>▶</span> 启动引擎
+              </button>
+              <button class="btn btn-ghost" id="btn-pause" style="display: none;">
+                <span>⏸</span> 暂停
+              </button>
+              <button class="btn btn-success" id="btn-resume" style="display: none;">
+                <span>▶</span> 继续
+              </button>
+              <button class="btn btn-danger" id="btn-stop" style="display: none;">
+                <span>⏹</span> 停止
+              </button>
+            </div>
+          </div>
+
+          <div class="progress-section">
+            <div class="progress-header">
+              <span style="font-size: 13px; color: var(--text-secondary);">整体进度</span>
+              <span style="font-size: 13px; color: var(--text-primary); font-weight: 600;">20%</span>
+            </div>
+            <div class="progress-bar-large">
+              <div class="progress-fill-large" style="width: 20%; background: var(--blue);"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chapter Progress + Issues + Logs -->
+        <div class="dashboard-grid">
+          <div class="dashboard-card wide">
+            <div class="card-header">
+              <div>
+                <div class="card-title">章节进度</div>
+                <div class="card-subtitle">点击章节进入单章工作区</div>
+              </div>
+            </div>
+            <div class="chapter-progress" id="chapter-progress"></div>
+          </div>
+
+          <div class="dashboard-card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">最近问题</div>
+                <div class="card-subtitle"><a href="/issues.html" style="color: var(--blue); text-decoration: none;">查看全部 →</a></div>
+              </div>
+            </div>
+            <div class="issue-list-compact" id="issue-list-compact">
+              <div class="issue-item-compact warning">
+                <span class="issue-icon">⚠</span>
+                <span class="issue-text">第4章遗漏节点 CBN、CEN</span>
+                <span class="issue-chapter">Ch.4</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-card full">
+            <div class="card-header">
+              <div>
+                <div class="card-title">引擎日志</div>
+                <div class="card-subtitle">实时运行日志</div>
+              </div>
+              <button class="btn btn-ghost btn-sm" id="btn-clear-logs">清空</button>
+            </div>
+            <div class="log-preview" id="log-preview">
+              <div style="color: var(--text-tertiary);">等待引擎启动...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/common.js"></script>
+  <script>
+    const { api, appState, showToast, qs, qsa, on } = window.NCS;
+
+    // Initialize
+    async function init() {
+      await loadProjectState();
+      await loadEngineStatus();
+      await loadIssues();
+      renderChapterProgress();
+      startLogPolling();
+    }
+
+    async function loadProjectState() {
+      try {
+        const project = await api('GET', '/project');
+        updatePhaseBar(project.phase);
+        qs('#current-phase').textContent = phaseName(project.phase);
+      } catch (e) {}
+    }
+
+    async function loadEngineStatus() {
+      try {
+        const status = await api('GET', '/engine/status');
+        updateEngineUI(status);
+      } catch (e) {}
+    }
+
+    async function loadIssues() {
+      try {
+        const issues = await api('GET', '/issues');
+        qs('#pending-issues').textContent = issues.pending?.length || 0;
+        renderIssueCompact(issues.pending?.slice(0, 3) || []);
+      } catch (e) {}
+    }
+
+    function updateEngineUI(status) {
+      const badge = qs('#engine-status-badge');
+      const text = qs('#engine-status-text');
+      const mode = qs('#engine-mode');
+      const btnStart = qs('#btn-start');
+      const btnPause = qs('#btn-pause');
+      const btnResume = qs('#btn-resume');
+      const btnStop = qs('#btn-stop');
+
+      badge.className = `engine-status ${status.status}`;
+      badge.innerHTML = `<span class="dot"></span>${status.status === 'running' ? '运行中' : status.status === 'paused' ? '已暂停' : '待机'}`;
+      text.textContent = status.status === 'running' ? '运行中' : status.status === 'paused' ? '已暂停' : '待机';
+      mode.textContent = `模式：${status.mode === 'auto' ? '全自动' : status.mode === 'pause' ? '暂停' : '手动'}`;
+
+      // Show/hide buttons based on state
+      btnStart.style.display = status.status === 'idle' ? 'inline-flex' : 'none';
+      btnPause.style.display = status.status === 'running' ? 'inline-flex' : 'none';
+      btnResume.style.display = status.status === 'paused' ? 'inline-flex' : 'none';
+      btnStop.style.display = status.status !== 'idle' ? 'inline-flex' : 'none';
+    }
+
+    function renderChapterProgress() {
+      const container = qs('#chapter-progress');
+      container.innerHTML = '';
+      for (let i = 1; i <= 10; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'chapter-dot';
+        dot.textContent = i;
+        // 模拟状态
+        if (i <= 2) dot.classList.add('done');
+        else if (i === 3) dot.classList.add('writing');
+        else if (i === 4) dot.classList.add('fail');
+        else dot.classList.add('pending');
+        dot.addEventListener('click', () => window.location.href = `/chapter.html?n=${i}`);
+        container.appendChild(dot);
+      }
+    }
+
+    function renderIssueCompact(issues) {
+      const container = qs('#issue-list-compact');
+      if (issues.length === 0) {
+        container.innerHTML = '<div style="color: var(--text-tertiary); font-size: 13px; padding: 12px;">暂无待处理问题</div>';
+        return;
+      }
+      container.innerHTML = '';
+      issues.forEach(issue => {
+        const div = document.createElement('div');
+        div.className = `issue-item-compact ${issue.level === '高' ? 'danger' : 'warning'}`;
+        div.innerHTML = `
+          <span class="issue-icon">${issue.level === '高' ? '🔴' : '⚠'}</span>
+          <span class="issue-text">${issue.title}</span>
+          <span class="issue-chapter">Ch.${issue.chapter || '-'}</span>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function updatePhaseBar(currentPhase) {
+      qsa('.phase-step').forEach(step => {
+        const phase = step.dataset.phase;
+        step.classList.remove('active', 'completed');
+        if (phase === currentPhase) step.classList.add('active');
+        else if (isPhaseBefore(phase, currentPhase)) step.classList.add('completed');
+      });
+    }
+
+    function isPhaseBefore(a, b) {
+      const order = ['topic', 'foundation', 'outline', 'production', 'review', 'export'];
+      return order.indexOf(a) < order.indexOf(b);
+    }
+
+    function phaseName(phase) {
+      const names = { topic: '选题', foundation: '框架', outline: '大纲', production: '正文', review: '审查', export: '发布' };
+      return names[phase] || phase;
+    }
+
+    // Mode selector
+    qsa('.mode-option').forEach(opt => {
+      on(opt, 'click', () => {
+        qsa('.mode-option').forEach(o => o.classList.remove('active'));
+        opt.classList.add('active');
+        const mode = opt.dataset.mode;
+        api('POST', '/settings', { mode });
+        showToast(`已切换为${mode === 'auto' ? '全自动' : mode === 'pause' ? '暂停' : '手动'}模式`);
+      });
+    });
+
+    // Engine controls
+    on(qs('#btn-start'), 'click', () => {
+      const mode = qs('.mode-option.active')?.dataset.mode || 'auto';
+      api('POST', '/engine/start', { chapter: 1, mode }).then(r => {
+        if (r.ok) showToast('引擎已启动', 'success');
+        else showToast(r.error, 'error');
+      });
+    });
+
+    on(qs('#btn-pause'), 'click', () => {
+      api('POST', '/engine/pause').then(() => showToast('引擎已暂停', 'info'));
+    });
+
+    on(qs('#btn-resume'), 'click', () => {
+      api('POST', '/engine/resume').then(() => showToast('引擎已继续', 'success'));
+    });
+
+    on(qs('#btn-stop'), 'click', () => {
+      api('POST', '/engine/stop').then(() => showToast('引擎已停止', 'info'));
+    });
+
+    // Log polling
+    function startLogPolling() {
+      setInterval(async () => {
+        try {
+          const logs = await api('GET', '/logs');
+          const preview = qs('#log-preview');
+          if (logs.length > 0 && logs[0].lines.length > 0) {
+            preview.innerHTML = logs[0].lines.map(l => `<div>${escapeHtml(l)}</div>`).join('');
+            preview.scrollTop = preview.scrollHeight;
+          }
+        } catch (e) {}
+      }, 3000);
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    on(qs('#btn-clear-logs'), 'click', () => {
+      qs('#log-preview').innerHTML = '<div style="color: var(--text-tertiary);">日志已清空</div>';
+    });
+
+    init();
+  </script>
+</body>
+</html>

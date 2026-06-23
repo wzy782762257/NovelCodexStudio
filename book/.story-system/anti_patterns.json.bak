@@ -1,0 +1,32 @@
+[
+  {
+    "text": "异能无代价",
+    "source_table": "题材与调性推理",
+    "source_id": "GR-010"
+  },
+  {
+    "text": "现代秩序消失",
+    "source_table": "题材与调性推理",
+    "source_id": "GR-010"
+  },
+  {
+    "text": "战斗后没有后果",
+    "source_table": "题材与调性推理",
+    "source_id": "GR-010"
+  },
+  {
+    "text": "情感靠标签",
+    "source_table": "裁决规则",
+    "source_id": "RS-004"
+  },
+  {
+    "text": "日常无冲突",
+    "source_table": "裁决规则",
+    "source_id": "RS-004"
+  },
+  {
+    "text": "角色千人一面",
+    "source_table": "裁决规则",
+    "source_id": "RS-004"
+  }
+]

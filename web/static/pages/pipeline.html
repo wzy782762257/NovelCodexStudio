@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>流水线视图 - Novel Codex Studio</title>
+  <link rel="stylesheet" href="/css/common.css">
+  <style>
+    .pipeline-table { width: 100%; }
+    .pipeline-table th { text-align: left; padding: 10px 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-tertiary); border-bottom: 1px solid var(--line); }
+    .pipeline-table td { padding: 12px; border-bottom: 1px solid var(--line-subtle); font-size: 13px; }
+    .pipeline-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .chapter-title-cell { font-weight: 500; color: var(--text-primary); }
+    .chapter-title-cell a { color: inherit; text-decoration: none; }
+    .chapter-title-cell a:hover { color: var(--blue); }
+    .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+    .status-badge.committed { background: rgba(52,199,134,0.12); color: var(--green); }
+    .status-badge.draft { background: rgba(52,135,255,0.12); color: var(--blue); }
+    .status-badge.pending { background: rgba(109,127,139,0.12); color: var(--text-tertiary); }
+    .status-badge.writing { background: rgba(32,185,213,0.12); color: var(--cyan); }
+    .status-badge.review { background: rgba(155,103,240,0.12); color: var(--violet); }
+    .status-badge.fail { background: rgba(227,77,77,0.12); color: var(--red); }
+    .action-btns { display: flex; gap: 6px; }
+    .score-display { display: flex; gap: 8px; align-items: center; }
+    .score-bar { width: 60px; height: 4px; background: var(--line-subtle); border-radius: 2px; overflow: hidden; }
+    .score-fill { height: 100%; border-radius: 2px; }
+    .filters { display: flex; gap: 12px; margin-bottom: 20px; }
+    .filter-btn { padding: 6px 14px; border-radius: 6px; font-size: 13px; border: 1px solid var(--line-subtle); background: transparent; color: var(--text-secondary); cursor: pointer; transition: all 0.15s ease; }
+    .filter-btn:hover, .filter-btn.active { border-color: var(--blue); color: var(--blue); background: rgba(52,135,255,0.08); }
+  </style>
+</head>
+<body>
+  <div class="app-frame">
+    <nav class="side-nav">
+      <div class="nav-brand">◆</div>
+      <a href="/" class="nav-item"><span class="icon">💡</span><span class="label">选题</span></a>
+      <a href="/foundation.html" class="nav-item"><span class="icon">🏗</span><span class="label">框架</span></a>
+      <a href="/outline.html" class="nav-item"><span class="icon">📋</span><span class="label">大纲</span></a>
+      <a href="/dashboard.html" class="nav-item"><span class="icon">📊</span><span class="label">指挥</span></a>
+      <a href="/pipeline.html" class="nav-item active"><span class="icon">⚙</span><span class="label">流水线</span></a>
+      <a href="/issues.html" class="nav-item"><span class="icon">⚠</span><span class="label">问题</span></a>
+      <a href="/export.html" class="nav-item"><span class="icon">📤</span><span class="label">导出</span></a>
+      <div class="nav-spacer"></div>
+      <a href="/settings.html" class="nav-item"><span class="icon">⚙</span><span class="label">设置</span></a>
+    </nav>
+
+    <div class="main-content">
+      <header class="topbar">
+        <div class="topbar-left">
+          <span class="breadcrumb"><strong>流水线视图</strong> / 章节状态</span>
+        </div>
+        <div class="topbar-right">
+          <span class="engine-status idle" id="engine-status-badge"><span class="dot"></span>待机</span>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <div class="page-header">
+          <h1>流水线视图</h1>
+          <p>所有章节的生成状态、质量评分、耗时一览</p>
+        </div>
+
+        <div class="filters">
+          <button class="filter-btn active" data-filter="all">全部</button>
+          <button class="filter-btn" data-filter="pending">排队中</button>
+          <button class="filter-btn" data-filter="writing">生成中</button>
+          <button class="filter-btn" data-filter="review">审查中</button>
+          <button class="filter-btn" data-filter="done">已完成</button>
+          <button class="filter-btn" data-filter="fail">异常</button>
+        </div>
+
+        <div class="card">
+          <div class="table-container">
+            <table class="pipeline-table">
+              <thead>
+                <tr>
+                  <th>章节</th>
+                  <th>标题</th>
+                  <th>状态</th>
+                  <th>质量评分</th>
+                  <th>字数</th>
+                  <th>耗时</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="pipeline-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/common.js"></script>
+  <script>
+    const { api, showToast, qs, qsa, on, formatDate } = window.NCS;
+
+    let chapters = [];
+
+    async function init() {
+      await loadChapters();
+      setupFilters();
+    }
+
+    async function loadChapters() {
+      try {
+        chapters = await api('GET', '/chapters');
+        renderTable(chapters);
+      } catch (e) {
+        // 模拟数据
+        chapters = [
+          { number: 1, title: '妹妹死后三年，我接到了她的求救电话', status: 'committed', scores: { overall: 92 }, words: 2019, elapsed: 180 },
+          { number: 2, title: '无法回拨', status: 'committed', scores: { overall: 88 }, words: 2002, elapsed: 165 },
+          { number: 3, title: '停机三年', status: 'draft', scores: { overall: 75 }, words: 0, elapsed: 0 },
+          { number: 4, title: '旧表背面', status: 'fail', scores: { overall: 0 }, words: 0, elapsed: 276 },
+          { number: 5, title: '第5章', status: 'pending', scores: {}, words: 0, elapsed: 0 },
+          { number: 6, title: '第6章', status: 'pending', scores: {}, words: 0, elapsed: 0 },
+          { number: 7, title: '第7章', status: 'pending', scores: {}, words: 0, elapsed: 0 },
+          { number: 8, title: '第8章', status: 'pending', scores: {}, words: 0, elapsed: 0 },
+          { number: 9, title: '第9章', status: 'pending', scores: {}, words: 0, elapsed: 0 },
+          { number: 10, title: '第10章', status: 'pending', scores: {}, words: 0, elapsed: 0 },
+        ];
+        renderTable(chapters);
+      }
+    }
+
+    function renderTable(data) {
+      const tbody = qs('#pipeline-body');
+      tbody.innerHTML = '';
+
+      data.forEach(ch => {
+        const tr = document.createElement('tr');
+        const score = ch.scores?.overall || 0;
+        const scoreColor = score >= 90 ? 'var(--green)' : score >= 70 ? 'var(--blue)' : score >= 50 ? 'var(--amber)' : 'var(--red)';
+
+        tr.innerHTML = `
+          <td>第 ${ch.number} 章</td>
+          <td class="chapter-title-cell"><a href="/chapter.html?n=${ch.number}">${ch.title}</a></td>
+          <td>${statusBadge(ch.status)}</td>
+          <td>
+            ${score > 0 ? `
+              <div class="score-display">
+                <span style="font-weight:600;font-size:13px;color:${scoreColor}">${score}</span>
+                <div class="score-bar"><div class="score-fill" style="width:${score}%;background:${scoreColor}"></div></div>
+              </div>
+            ` : '<span style="color:var(--text-tertiary)">-</span>'}
+          </td>
+          <td>${ch.words > 0 ? ch.words.toLocaleString() : '-'}</td>
+          <td>${ch.elapsed > 0 ? formatDuration(ch.elapsed) : '-'}</td>
+          <td>
+            <div class="action-btns">
+              ${ch.status === 'pending' ? `<button class="btn btn-primary btn-sm" onclick="generateChapter(${ch.number})">生成</button>` : ''}
+              ${ch.status === 'draft' ? `<button class="btn btn-ghost btn-sm" onclick="openChapter(${ch.number})">编辑</button>` : ''}
+              ${ch.status === 'fail' ? `<button class="btn btn-danger btn-sm" onclick="retryChapter(${ch.number})">重试</button>` : ''}
+              ${ch.status === 'committed' ? `<button class="btn btn-ghost btn-sm" onclick="openChapter(${ch.number})">查看</button>` : ''}
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function statusBadge(status) {
+      const map = {
+        committed: ['committed', '✓ 已提交'],
+        draft: ['draft', '✎ 草稿'],
+        pending: ['pending', '○ 排队中'],
+        writing: ['writing', '⟳ 生成中'],
+        review: ['review', '🔍 审查中'],
+        fail: ['fail', '✗ 异常'],
+      };
+      const [cls, text] = map[status] || ['pending', status];
+      return `<span class="status-badge ${cls}">${text}</span>`;
+    }
+
+    function formatDuration(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return m > 0 ? `${m}分${s}秒` : `${s}秒`;
+    }
+
+    function setupFilters() {
+      qsa('.filter-btn').forEach(btn => {
+        on(btn, 'click', () => {
+          qsa('.filter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const filter = btn.dataset.filter;
+          if (filter === 'all') renderTable(chapters);
+          else renderTable(chapters.filter(c => c.status === filter));
+        });
+      });
+    }
+
+    window.generateChapter = function(n) {
+      api('POST', `/engine/start`, { chapter: n }).then(r => {
+        if (r.ok) showToast(`第 ${n} 章生成任务已启动`, 'success');
+        else showToast(r.error, 'error');
+      });
+    };
+
+    window.openChapter = function(n) {
+      window.location.href = `/chapter.html?n=${n}`;
+    };
+
+    window.retryChapter = function(n) {
+      api('POST', `/engine/start`, { chapter: n }).then(r => {
+        if (r.ok) showToast(`第 ${n} 章重试任务已启动`, 'success');
+        else showToast(r.error, 'error');
+      });
+    };
+
+    init();
+  </script>
+</body>
+</html>

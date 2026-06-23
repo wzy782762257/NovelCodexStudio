@@ -1,0 +1,18 @@
+{
+  "meta": {
+    "schema_version": "story-system/v1",
+    "contract_type": "REVIEW_CONTRACT",
+    "generator_version": "outline_extractor",
+    "chapter": 2
+  },
+  "must_cover_nodes": [
+    "CBN",
+    "录音文件 | 暴露 | “别送去三院”的关键词",
+    "CEN"
+  ],
+  "blocking_rules": [
+    "不得让周启明知道回声",
+    "不得让陈默拿走原始系统权限",
+    "不得把失物认领人身份直接揭开。"
+  ]
+}

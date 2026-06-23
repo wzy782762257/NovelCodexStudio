@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "chapter",
+    "committed",
+    "quality_gate",
+    "issues",
+    "summary",
+    "next_action"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["committed", "retryable", "halted"]
+    },
+    "chapter": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "committed": {
+      "type": "boolean"
+    },
+    "quality_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hard_pass", "revision_count", "scores"],
+      "properties": {
+        "hard_pass": {"type": "boolean"},
+        "revision_count": {"type": "integer", "minimum": 0, "maximum": 3},
+        "scores": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "plot_progress",
+            "character_consistency",
+            "continuity",
+            "pacing",
+            "chapter_hook",
+            "style_naturalness"
+          ],
+          "properties": {
+            "plot_progress": {"type": "integer", "minimum": 0, "maximum": 100},
+            "character_consistency": {"type": "integer", "minimum": 0, "maximum": 100},
+            "continuity": {"type": "integer", "minimum": 0, "maximum": 100},
+            "pacing": {"type": "integer", "minimum": 0, "maximum": 100},
+            "chapter_hook": {"type": "integer", "minimum": 0, "maximum": 100},
+            "style_naturalness": {"type": "integer", "minimum": 0, "maximum": 100}
+          }
+        }
+      }
+    },
+    "issues": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "summary": {"type": "string"},
+    "next_action": {"type": "string"}
+  }
+}

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>框架设计 - Novel Codex Studio</title>
+  <link rel="stylesheet" href="/css/common.css">
+  <style>
+    .foundation-layout { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .foundation-card { background: var(--panel); border: 1px solid var(--line-subtle); border-radius: 10px; padding: 20px; min-height: 300px; }
+    .foundation-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .foundation-card textarea { width: 100%; min-height: 200px; resize: vertical; font-size: 13px; line-height: 1.8; }
+    .character-list { display: flex; flex-direction: column; gap: 10px; }
+    .character-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--bg-elevated); border-radius: 8px; border: 1px solid var(--line-subtle); }
+    .character-avatar { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 600; }
+    .character-avatar.protagonist { background: rgba(227,77,77,0.15); color: var(--red); }
+    .character-avatar.supporting { background: rgba(52,135,255,0.15); color: var(--blue); }
+    .character-info { flex: 1; }
+    .character-info strong { font-size: 13px; display: block; }
+    .character-info span { font-size: 11px; color: var(--text-tertiary); }
+    .action-bar { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line-subtle); }
+  </style>
+</head>
+<body>
+  <div class="app-frame">
+    <nav class="side-nav">
+      <div class="nav-brand">◆</div>
+      <a href="/" class="nav-item"><span class="icon">💡</span><span class="label">选题</span></a>
+      <a href="/foundation.html" class="nav-item active"><span class="icon">🏗</span><span class="label">框架</span></a>
+      <a href="/outline.html" class="nav-item"><span class="icon">📋</span><span class="label">大纲</span></a>
+      <a href="/dashboard.html" class="nav-item"><span class="icon">📊</span><span class="label">指挥</span></a>
+      <a href="/pipeline.html" class="nav-item"><span class="icon">⚙</span><span class="label">流水线</span></a>
+      <a href="/issues.html" class="nav-item"><span class="icon">⚠</span><span class="label">问题</span></a>
+      <a href="/export.html" class="nav-item"><span class="icon">📤</span><span class="label">导出</span></a>
+      <div class="nav-spacer"></div>
+      <a href="/settings.html" class="nav-item"><span class="icon">⚙</span><span class="label">设置</span></a>
+    </nav>
+
+    <div class="main-content">
+      <header class="topbar">
+        <div class="topbar-left">
+          <span class="breadcrumb"><strong>框架设计</strong> / 世界观 · 角色 · 剧情</span>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <div class="page-header">
+          <h1>框架设计</h1>
+          <p>构建世界观、角色卡、剧情脉络，为正文写作提供基础</p>
+        </div>
+
+        <div class="phase-bar" id="phase-bar">
+          <div class="phase-step completed" data-phase="topic">选题</div>
+          <div class="phase-step active" data-phase="foundation">框架</div>
+          <div class="phase-step" data-phase="outline">大纲</div>
+          <div class="phase-step" data-phase="production">正文</div>
+          <div class="phase-step" data-phase="review">审查</div>
+          <div class="phase-step" data-phase="export">发布</div>
+        </div>
+
+        <div class="foundation-layout">
+          <div class="foundation-card">
+            <h3>🌍 世界观</h3>
+            <textarea id="world-setting" placeholder="描述世界观设定：背景、规则、势力分布..."></textarea>
+          </div>
+          <div class="foundation-card">
+            <h3>👤 角色</h3>
+            <div class="character-list" id="character-list">
+              <div class="character-item">
+                <div class="character-avatar protagonist">陈</div>
+                <div class="character-info">
+                  <strong>陈默</strong>
+                  <span>主角 · 急救调度员</span>
+                </div>
+              </div>
+              <div class="character-item">
+                <div class="character-avatar supporting">苏</div>
+                <div class="character-info">
+                  <strong>苏岚</strong>
+                  <span>配角 · 派出所民警</span>
+                </div>
+              </div>
+              <div class="character-item">
+                <div class="character-avatar supporting">林</div>
+                <div class="character-info">
+                  <strong>林知夏</strong>
+                  <span>配角 · 急诊医生</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="foundation-card">
+            <h3>📖 剧情脉络</h3>
+            <textarea id="plot-arc" placeholder="描述主线、支线、冲突点、高潮节点..."></textarea>
+          </div>
+        </div>
+
+        <div class="action-bar">
+          <button class="btn btn-ghost" onclick="saveFoundation()">💾 保存</button>
+          <button class="btn btn-primary" onclick="completeFoundation()">✓ 完成框架设计，进入大纲</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/common.js"></script>
+  <script>
+    const { api, showToast } = window.NCS;
+
+    async function init() {
+      try {
+        const data = await api('GET', '/api/phase/foundation');
+        if (data.data?.world) qs('#world-setting').value = data.data.world;
+        if (data.data?.plot) qs('#plot-arc').value = data.data.plot;
+      } catch (e) {}
+    }
+
+    function qs(sel) { return document.querySelector(sel); }
+
+    async function saveFoundation() {
+      const world = qs('#world-setting').value;
+      const plot = qs('#plot-arc').value;
+      try {
+        await api('POST', '/api/phase/foundation', { data: { world, plot } });
+        showToast('已保存', 'success');
+      } catch (e) {
+        showToast('保存失败', 'error');
+      }
+    }
+
+    async function completeFoundation() {
+      await saveFoundation();
+      try {
+        await api('POST', '/api/phase/foundation/complete');
+        showToast('框架设计完成，进入大纲', 'success');
+        setTimeout(() => window.location.href = '/outline.html', 1000);
+      } catch (e) {
+        showToast('推进失败', 'error');
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

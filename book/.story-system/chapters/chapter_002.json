@@ -1,0 +1,45 @@
+{
+  "meta": {
+    "schema_version": "story-system/v1",
+    "contract_type": "CHAPTER_BRIEF",
+    "generator_version": "outline_extractor",
+    "chapter": 2
+  },
+  "override_allowed": {
+    "chapter_focus": "陈默复核录音，确认异常不是设备故障。"
+  },
+  "chapter_directive": {
+    "time_anchor": "6月22日01:05，调度中心录音复核室。",
+    "chapter_span": "2小时。",
+    "countdown": "手表回收 D-3。",
+    "goal": "陈默复核录音，确认异常不是设备故障。",
+    "strand": "Quest。",
+    "antagonist_tier": "孟骁通过匿名内线得知手表未被回收。",
+    "key_entities": [
+      "调度录音",
+      "赵一鸣",
+      "周启明",
+      "三院"
+    ],
+    "chapter_end_open_question": "系统日志为什么缺失12秒。",
+    "cbn": "陈默 | 面对 | 妹妹号码登记结果",
+    "cpns": [
+      "陈默 | 复核 | 零点求救录音",
+      "录音文件 | 暴露 | “别送去三院”的关键词",
+      "周启明 | 阻止 | 陈默继续私查",
+      "失物登记电话 | 通知 | 手表即将被认领"
+    ],
+    "cen": "陈默 | 意识到 | 有人比他更急着拿走手表",
+    "must_cover_nodes": [
+      "CBN",
+      "录音文件 | 暴露 | “别送去三院”的关键词",
+      "CEN"
+    ],
+    "forbidden_zones": [
+      "不得让周启明知道回声",
+      "不得让陈默拿走原始系统权限",
+      "不得把失物认领人身份直接揭开。"
+    ],
+    "source": "chapter_outline"
+  }
+}

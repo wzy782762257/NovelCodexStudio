@@ -1,0 +1,48 @@
+[
+  {
+    "event_id": "evt-ch001-001",
+    "chapter": 1,
+    "event_type": "open_loop_created",
+    "subject": "chen_mo",
+    "payload": {
+      "content": "零点后的异常求救电话来自河西旧表厂宿舍，号码无法正常回拨。",
+      "unanswered_question": "求救者是谁，为什么使用异常号码拨入120？",
+      "urgency": 90,
+      "planted_chapter": 1
+    }
+  },
+  {
+    "event_id": "evt-ch001-002",
+    "chapter": 1,
+    "event_type": "artifact_obtained",
+    "subject": "chen_mo",
+    "payload": {
+      "artifact_id": "old_child_watch",
+      "name": "旧儿童手表",
+      "owner": "chen_mo"
+    }
+  },
+  {
+    "event_id": "evt-ch001-003",
+    "chapter": 1,
+    "event_type": "world_rule_revealed",
+    "subject": "old_child_watch",
+    "payload": {
+      "rule_content": "陈默在零点后裸手触碰强事件关联物品时，可能听见一句带歧义的真实回声；首次触发伴随眩晕和耳鸣。",
+      "rule_category": "零点回声",
+      "scope": "等级1初听"
+    }
+  },
+  {
+    "event_id": "evt-ch001-004",
+    "chapter": 1,
+    "event_type": "open_loop_created",
+    "subject": "chen_mo",
+    "payload": {
+      "content": "异常来电号码登记人为三年前已故的妹妹陈曦。",
+      "unanswered_question": "已故妹妹的号码为什么能在今晚拨入急救中心？",
+      "urgency": 100,
+      "planted_chapter": 1
+    }
+  }
+]

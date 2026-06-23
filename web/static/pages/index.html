@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>选题 - Novel Codex Studio</title>
+  <link rel="stylesheet" href="/css/common.css">
+  <style>
+    .topic-page { display: flex; flex-direction: column; min-height: 100vh; }
+    .topic-header {
+      text-align: center; padding: 60px 20px 40px;
+    }
+    .topic-header h1 {
+      font-size: 32px; font-weight: 700; margin-bottom: 12px;
+    }
+    .topic-header p {
+      font-size: 15px; color: var(--text-tertiary); max-width: 500px; margin: 0 auto;
+    }
+    .topic-input-area {
+      max-width: 720px; margin: 0 auto; padding: 0 20px 60px;
+    }
+    .topic-input {
+      width: 100%; min-height: 120px; padding: 16px 20px;
+      font-size: 15px; line-height: 1.8; resize: vertical;
+    }
+    .topic-actions {
+      display: flex; gap: 12px; margin-top: 20px; justify-content: center;
+    }
+    .topic-suggestions {
+      max-width: 720px; margin: 0 auto; padding: 0 20px 40px;
+    }
+    .suggestion-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 20px;
+    }
+    .suggestion-card {
+      background: var(--panel); border: 1px solid var(--line-subtle);
+      border-radius: 10px; padding: 20px; cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .suggestion-card:hover {
+      border-color: var(--blue); transform: translateY(-2px);
+    }
+    .suggestion-card h3 {
+      font-size: 15px; margin-bottom: 8px; color: var(--text-primary);
+    }
+    .suggestion-card p {
+      font-size: 13px; color: var(--text-tertiary); line-height: 1.6;
+    }
+    .suggestion-card .meta {
+      display: flex; gap: 12px; margin-top: 12px; font-size: 11px;
+      color: var(--text-tertiary);
+    }
+    .phase-nav {
+      display: flex; justify-content: center; gap: 8px; padding: 20px;
+    }
+    .phase-nav a {
+      color: var(--text-tertiary); text-decoration: none; font-size: 13px;
+      padding: 8px 16px; border-radius: 6px; transition: all 0.15s ease;
+    }
+    .phase-nav a:hover { color: var(--text-primary); background: var(--panel); }
+    .phase-nav a.active { color: var(--blue); background: rgba(52,135,255,0.1); }
+  </style>
+</head>
+<body>
+  <div class="topic-page">
+    <div class="phase-nav">
+      <a href="/" class="active">选题</a>
+      <a href="/foundation.html">框架设计</a>
+      <a href="/outline.html">大纲</a>
+      <a href="/dashboard.html">指挥中心</a>
+      <a href="/pipeline.html">流水线</a>
+      <a href="/issues.html">问题中心</a>
+      <a href="/export.html">导出</a>
+    </div>
+
+    <div class="topic-header">
+      <h1>从选题开始</h1>
+      <p>描述你想要的主题、类型、风格或关键词，AI 会为你生成多个选题方案。你也可以直接输入自己的想法。</p>
+    </div>
+
+    <div class="topic-input-area">
+      <textarea class="topic-input" id="topic-input" placeholder="例如：写一个都市异能小说，主角是急救调度员，他能在凌晨接到死去的妹妹的求救电话..."></textarea>
+      <div class="topic-actions">
+        <button class="btn btn-primary btn-lg" id="btn-generate-topics">
+          <span>🎲</span> 生成选题方案
+        </button>
+        <button class="btn btn-ghost btn-lg" id="btn-skip-topic">
+          已有方向，跳过选题
+        </button>
+      </div>
+    </div>
+
+    <div class="topic-suggestions" id="topic-suggestions" style="display: none;">
+      <h2 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">推荐选题</h2>
+      <p style="font-size: 13px; color: var(--text-tertiary);">点击选择，或修改后再用</p>
+      <div class="suggestion-grid" id="suggestion-grid"></div>
+    </div>
+  </div>
+
+  <script src="/js/common.js"></script>
+  <script>
+    const { api, showToast, NCS } = window;
+
+    document.getElementById('btn-generate-topics').addEventListener('click', async () => {
+      const input = document.getElementById('topic-input').value.trim();
+      if (!input) {
+        showToast('请先输入主题或关键词', 'error');
+        return;
+      }
+      
+      showToast('正在生成选题方案...', 'info');
+      
+      // 模拟生成（实际应调用后端API）
+      const suggestions = [
+        {
+          title: "零点回声",
+          desc: "都市异能悬疑。主角是急救调度员，在凌晨接到死去妹妹的求救电话，逐渐发现城市存在一个'静默计划'——用声音操控记忆的阴谋。",
+          genre: "都市异能",
+          tone: "悬疑冷峻",
+          words: "80-100万字"
+        },
+        {
+          title: "电话那头的她",
+          desc: "软科幻+情感。主角通过一部旧电话与三年前的妹妹对话，每次通话都会改变现在，但改变的方向越来越不可控。",
+          genre: "软科幻",
+          tone: "温情悬疑",
+          words: "60-80万字"
+        },
+        {
+          title: "调度员的午夜档案",
+          desc: "单元剧+主线。每章是一个求救电话，背后都是超自然事件，主线是主角逐渐发现自己也在某个'实验'中。",
+          genre: "都市怪谈",
+          tone: "单元悬疑",
+          words: "100万字+"
+        }
+      ];
+      
+      renderSuggestions(suggestions);
+    });
+
+    function renderSuggestions(items) {
+      const container = document.getElementById('topic-suggestions');
+      const grid = document.getElementById('suggestion-grid');
+      grid.innerHTML = '';
+      
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'suggestion-card';
+        card.innerHTML = `
+          <h3>${item.title}</h3>
+          <p>${item.desc}</p>
+          <div class="meta">
+            <span>${item.genre}</span>
+            <span>${item.tone}</span>
+            <span>${item.words}</span>
+          </div>
+        `;
+        card.addEventListener('click', () => selectTopic(item));
+        grid.appendChild(card);
+      });
+      
+      container.style.display = 'block';
+    }
+
+    async function selectTopic(item) {
+      try {
+        await api('POST', '/api/phase/topic', {
+          data: {
+            title: item.title,
+            description: item.desc,
+            genre: item.genre,
+            tone: item.tone,
+            target_words: item.words
+          }
+        });
+        await api('POST', '/api/phase/topic/complete');
+        showToast(`已选择「${item.title}」，进入框架设计`, 'success');
+        setTimeout(() => window.location.href = '/foundation.html', 1000);
+      } catch (e) {
+        showToast('保存失败', 'error');
+      }
+    }
+
+    document.getElementById('btn-skip-topic').addEventListener('click', () => {
+      window.location.href = '/foundation.html';
+    });
+  </script>
+</body>
+</html>

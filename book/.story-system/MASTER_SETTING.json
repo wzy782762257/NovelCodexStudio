@@ -1,0 +1,119 @@
+{
+  "meta": {
+    "schema_version": "story-system/v1",
+    "contract_type": "MASTER_SETTING",
+    "generator_version": "phase1",
+    "query": "陈默接到异常求救电话，并在旧儿童手表上听见第一句回声。"
+  },
+  "route": {
+    "primary_genre": "都市赘婿流",
+    "canonical_genre": "都市",
+    "route_source": "explicit_genre_fallback",
+    "genre_filter": "都市",
+    "recommended_base_tables": [
+      "命名规则",
+      "人设与关系",
+      "场景写法"
+    ],
+    "recommended_dynamic_tables": [
+      "桥段套路",
+      "爽点与节奏",
+      "写作技法"
+    ]
+  },
+  "master_constraints": {
+    "core_tone": "先压后爆",
+    "pacing_strategy": "三章内必须有明确身份落差"
+  },
+  "base_context": [
+    {
+      "编号": "SP-004",
+      "适用技能": "write|plan",
+      "分类": "桥段",
+      "层级": "知识补充",
+      "关键词": "桥段套路|扮猪吃虎|打脸反击|装弱爆发",
+      "意图与同义词": "扮猪吃虎怎么写|打脸怎么写|反击桥段怎么铺垫",
+      "适用题材": "全部",
+      "大模型指令": "先铺信息差和压制感，再在关键节点集中反击，不能让爆发毫无代价或完全靠对手降智。",
+      "核心摘要": "扮猪吃虎式反击要先让主角处于被低估位置，再通过信息差或隐藏底牌完成集中反转。",
+      "详细展开": "铺垫阶段要明确谁误判了主角、主角为什么暂时不出手，以及爆发后会改写什么局面。",
+      "场景类型": "桥段场景",
+      "模式名称": "扮猪吃虎式打脸反击",
+      "说明": "适合通过隐藏实力、错位认知和压抑蓄力制造反转爽感，关键在于前置压制和后段兑现对称。",
+      "示例片段": "众人都以为他只是个跑腿小修士，直到考核擂台开启，他一剑断阵，主考长老当场失声。",
+      "毒点": "刚被嘲讽完立刻无代价开挂秒杀，全程没有铺垫和反转支点",
+      "_table": "场景写法",
+      "_priority_rank": 2,
+      "_reasoning_rule": "都市",
+      "_chapter_keyword_score": 0,
+      "_combined_rank_score": 0.133333
+    }
+  ],
+  "source_trace": [
+    {
+      "table": "题材与调性推理",
+      "id": "GR-004",
+      "reason": "explicit_genre_fallback"
+    },
+    {
+      "table": "场景写法",
+      "id": "SP-004",
+      "summary": "扮猪吃虎式反击要先让主角处于被低估位置，再通过信息差或隐藏底牌完成集中反转。",
+      "reasoning_rule": "都市",
+      "priority_rank": 2,
+      "chapter_keyword_score": 0,
+      "combined_rank_score": 0.133333,
+      "inject_target": "CHAPTER_BRIEF.writing_guidance"
+    },
+    {
+      "table": "桥段套路",
+      "id": "TR-003",
+      "summary": "打脸权威桥段要先让权威的判断看似合理，再用更高维的信息或能力在众目睽睽下推翻结论。",
+      "reasoning_rule": "都市",
+      "priority_rank": 999,
+      "chapter_keyword_score": 0,
+      "combined_rank_score": 0.0,
+      "inject_target": "CHAPTER_BRIEF.writing_guidance"
+    },
+    {
+      "table": "桥段套路",
+      "id": "TR-012",
+      "summary": "校园霸凌反击最解气的不是打回去，而是让霸凌者在规则和公开场合里完成社会性死亡。",
+      "reasoning_rule": "都市",
+      "priority_rank": 999,
+      "chapter_keyword_score": 0,
+      "combined_rank_score": 0.0,
+      "inject_target": "CHAPTER_BRIEF.writing_guidance"
+    },
+    {
+      "table": "爽点与节奏",
+      "id": "PA-054",
+      "summary": "很多打脸场的完成度，取决于最后那一拍补刀有没有把情绪真正抬满。",
+      "reasoning_rule": "都市",
+      "priority_rank": 999,
+      "chapter_keyword_score": 0,
+      "combined_rank_score": 0.0,
+      "inject_target": "CHAPTER_BRIEF.writing_guidance"
+    },
+    {
+      "table": "爽点与节奏",
+      "id": "PA-044",
+      "summary": "爽点换挡防疲劳期的目的，不是换掉卖点，而是让同一卖点从不同维度持续新鲜。",
+      "reasoning_rule": "都市",
+      "priority_rank": 999,
+      "chapter_keyword_score": 0,
+      "combined_rank_score": 0.0,
+      "inject_target": "CHAPTER_BRIEF.writing_guidance"
+    }
+  ],
+  "override_policy": {
+    "locked": [
+      "route.primary_genre",
+      "master_constraints.core_tone"
+    ],
+    "append_only": [
+      "anti_patterns"
+    ],
+    "override_allowed": []
+  }
+}

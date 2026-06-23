@@ -1,0 +1,6 @@
+.env
+.novel-supervisor/lock
+.novel-supervisor/logs/
+.webnovel/backups/
+__pycache__/
+*.pyc

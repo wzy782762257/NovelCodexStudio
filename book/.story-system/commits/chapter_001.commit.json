@@ -1,0 +1,277 @@
+{
+  "meta": {
+    "schema_version": "story-system/v1",
+    "chapter": 1,
+    "status": "accepted"
+  },
+  "contract_refs": {
+    "master": "MASTER_SETTING.json",
+    "volume": "volume_001.json",
+    "chapter": "chapter_001.json",
+    "review": "chapter_001.review.json"
+  },
+  "provenance": {
+    "write_fact_role": "chapter_commit",
+    "projection_role": "derived_read_models",
+    "legacy_state_role": "projection_only"
+  },
+  "outline_snapshot": {
+    "planned_nodes": [
+      "CBN",
+      "旧儿童手表",
+      "留下",
+      "“别让他们找到哥哥”的回声",
+      "CEN"
+    ],
+    "covered_nodes": [
+      "CBN：陈默在00:03接入零点后的异常求救电话。",
+      "旧儿童手表：一个装在密封袋里的旧儿童手表被送到调度中心并放到陈默桌角。",
+      "留下：旧儿童手表在陈默裸手触碰表带时留下物品回声。",
+      "“别让他们找到哥哥”的回声：正文中唯一回声为“别让他们找到哥哥。”",
+      "CEN：陈默在内部历史号码库查到来电号码登记人为已故妹妹陈曦。"
+    ],
+    "missed_nodes": [],
+    "extra_nodes": []
+  },
+  "review_result": {
+    "blocking_count": 0,
+    "chapter": 1,
+    "issues": [],
+    "issues_count": 0,
+    "has_blocking": false,
+    "summary": "自审通过：正文以6月22日零点后调度中心夜班开场，陈默按120流程处理异常求救，先派车并联动警方，未越权破案；旧儿童手表被送到调度中心后触发唯一一句回声，表现为初听阶段的眩晕和耳鸣，没有主动追问和明确记忆丢失；章末通过合法内部历史号码库核对，确认来电号码登记人为已故妹妹陈曦，留下号码为何拨入急救中心的悬念。未解释静默计划全貌，未确认陈曦生还，未出现第二句回声。"
+  },
+  "fulfillment_result": {
+    "planned_nodes": [
+      "CBN",
+      "旧儿童手表",
+      "留下",
+      "“别让他们找到哥哥”的回声",
+      "CEN"
+    ],
+    "covered_nodes": [
+      "CBN：陈默在00:03接入零点后的异常求救电话。",
+      "旧儿童手表：一个装在密封袋里的旧儿童手表被送到调度中心并放到陈默桌角。",
+      "留下：旧儿童手表在陈默裸手触碰表带时留下物品回声。",
+      "“别让他们找到哥哥”的回声：正文中唯一回声为“别让他们找到哥哥。”",
+      "CEN：陈默在内部历史号码库查到来电号码登记人为已故妹妹陈曦。"
+    ],
+    "missed_nodes": [],
+    "extra_nodes": []
+  },
+  "disambiguation_result": {
+    "pending": []
+  },
+  "extraction_result": {
+    "accepted_events": [
+      {
+        "event_id": "evt-ch001-001",
+        "chapter": 1,
+        "event_type": "open_loop_created",
+        "subject": "chen_mo",
+        "payload": {
+          "content": "零点后的异常求救电话来自河西旧表厂宿舍，号码无法正常回拨。",
+          "unanswered_question": "求救者是谁，为什么使用异常号码拨入120？",
+          "urgency": 90,
+          "planted_chapter": 1
+        }
+      },
+      {
+        "event_id": "evt-ch001-002",
+        "chapter": 1,
+        "event_type": "artifact_obtained",
+        "subject": "chen_mo",
+        "payload": {
+          "artifact_id": "old_child_watch",
+          "name": "旧儿童手表",
+          "owner": "chen_mo"
+        }
+      },
+      {
+        "event_id": "evt-ch001-003",
+        "chapter": 1,
+        "event_type": "world_rule_revealed",
+        "subject": "old_child_watch",
+        "payload": {
+          "rule_content": "陈默在零点后裸手触碰强事件关联物品时，可能听见一句带歧义的真实回声；首次触发伴随眩晕和耳鸣。",
+          "rule_category": "零点回声",
+          "scope": "等级1初听"
+        }
+      },
+      {
+        "event_id": "evt-ch001-004",
+        "chapter": 1,
+        "event_type": "open_loop_created",
+        "subject": "chen_mo",
+        "payload": {
+          "content": "异常来电号码登记人为三年前已故的妹妹陈曦。",
+          "unanswered_question": "已故妹妹的号码为什么能在今晚拨入急救中心？",
+          "urgency": 100,
+          "planted_chapter": 1
+        }
+      }
+    ],
+    "state_deltas": [
+      {
+        "entity_id": "chen_mo",
+        "field": "location.current",
+        "old": "",
+        "new": "临江市120急救调度中心"
+      },
+      {
+        "entity_id": "chen_mo",
+        "field": "golden_finger.name",
+        "old": "未命名金手指",
+        "new": "零点回声"
+      }
+    ],
+    "entity_deltas": [
+      {
+        "entity_id": "chen_mo",
+        "action": "upsert",
+        "entity_type": "角色",
+        "is_protagonist": true,
+        "payload": {
+          "name": "陈默",
+          "role": "临江市120急救调度中心夜班调度员"
+        }
+      },
+      {
+        "entity_id": "zhou_qiming",
+        "action": "upsert",
+        "entity_type": "角色",
+        "payload": {
+          "name": "周启明",
+          "role": "调度中心值班长"
+        }
+      },
+      {
+        "entity_id": "old_child_watch",
+        "action": "upsert",
+        "entity_type": "物品",
+        "payload": {
+          "name": "旧儿童手表",
+          "description": "粉蓝色旧儿童定位表，表带断裂、屏幕开裂，触发第一句零点回声。"
+        }
+      }
+    ],
+    "entities_appeared": [
+      {
+        "id": "chen_mo",
+        "type": "角色",
+        "mentions": [
+          "陈默"
+        ],
+        "confidence": 1.0
+      },
+      {
+        "id": "chen_xi",
+        "type": "角色",
+        "mentions": [
+          "陈曦",
+          "妹妹"
+        ],
+        "confidence": 1.0
+      },
+      {
+        "id": "zhou_qiming",
+        "type": "角色",
+        "mentions": [
+          "周启明",
+          "值班长"
+        ],
+        "confidence": 1.0
+      },
+      {
+        "id": "xiao_tang",
+        "type": "角色",
+        "mentions": [
+          "小唐"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "id": "old_child_watch",
+        "type": "物品",
+        "mentions": [
+          "旧儿童手表",
+          "儿童定位表"
+        ],
+        "confidence": 1.0
+      },
+      {
+        "id": "chen_xi_phone_number",
+        "type": "物品",
+        "mentions": [
+          "陈曦号码",
+          "来电号码"
+        ],
+        "confidence": 1.0
+      },
+      {
+        "id": "linjiang_120_dispatch",
+        "type": "地点",
+        "mentions": [
+          "临江市120急救调度中心",
+          "调度中心"
+        ],
+        "confidence": 1.0
+      },
+      {
+        "id": "hexi_watch_factory_dorm",
+        "type": "地点",
+        "mentions": [
+          "河西旧表厂宿舍"
+        ],
+        "confidence": 1.0
+      }
+    ],
+    "scenes": [
+      {
+        "index": 1,
+        "start_line": 1,
+        "end_line": 72,
+        "location": "临江市120急救调度中心夜班大厅",
+        "summary": "陈默在零点后接入异常求救电话，处理定位失败、派车和回拨异常。",
+        "characters": [
+          "chen_mo",
+          "zhou_qiming",
+          "xiao_tang"
+        ]
+      },
+      {
+        "index": 2,
+        "start_line": 73,
+        "end_line": 112,
+        "location": "调度中心桌面",
+        "summary": "旧儿童手表被送到陈默桌角，陈默触碰后听见第一句回声。",
+        "characters": [
+          "chen_mo",
+          "zhou_qiming",
+          "xiao_tang"
+        ]
+      },
+      {
+        "index": 3,
+        "start_line": 113,
+        "end_line": 139,
+        "location": "内部历史号码库",
+        "summary": "陈默查到异常来电号码登记人为已故妹妹陈曦。",
+        "characters": [
+          "chen_mo",
+          "chen_xi"
+        ]
+      }
+    ],
+    "chapter_meta": {},
+    "dominant_strand": "",
+    "summary_text": "6月22日零点后，陈默在120调度中心接到河西旧表厂宿舍异常求救电话，按流程派出救护车并联动警方。系统显示号码无法正常回拨。随后旧儿童手表被送到调度中心，陈默触碰后听见“别让他们找到哥哥。”他最终查到该来电号码登记人为已故妹妹陈曦。"
+  },
+  "projection_status": {
+    "state": "done",
+    "index": "done",
+    "summary": "done",
+    "memory": "done",
+    "vector": "skipped"
+  }
+}

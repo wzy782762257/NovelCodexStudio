@@ -1,0 +1,44 @@
+[
+  {
+    "event_id": "evt-ch001-001-bd3dac1f75",
+    "chapter": 1,
+    "event_type": "open_loop_created",
+    "subject": "陈默",
+    "payload": {}
+  },
+  {
+    "event_id": "evt-ch001-002-5789e31a4d",
+    "chapter": 1,
+    "event_type": "character_state_changed",
+    "subject": "陈默",
+    "payload": {}
+  },
+  {
+    "event_id": "evt-ch001-003-10962a40d1",
+    "chapter": 1,
+    "event_type": "open_loop_created",
+    "subject": "调度系统",
+    "payload": {}
+  },
+  {
+    "event_id": "evt-ch001-004-d0155db317",
+    "chapter": 1,
+    "event_type": "artifact_obtained",
+    "subject": "旧儿童手表",
+    "payload": {}
+  },
+  {
+    "event_id": "evt-ch001-005-d7929e2bb3",
+    "chapter": 1,
+    "event_type": "world_rule_revealed",
+    "subject": "旧儿童手表",
+    "payload": {}
+  },
+  {
+    "event_id": "evt-ch001-006-0d0dcd6706",
+    "chapter": 1,
+    "event_type": "open_loop_created",
+    "subject": "陈默",
+    "payload": {}
+  }
+]

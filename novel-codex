@@ -1,0 +1,4 @@
+#!/bin/sh
+set -eu
+STUDIO="${NOVEL_CODEX_HOME:-$HOME/Documents/Codex/NovelCodexStudio}"
+exec "$STUDIO/.venv/bin/python" "$STUDIO/launcher.py" "$@"

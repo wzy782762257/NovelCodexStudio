@@ -1,0 +1,92 @@
+{
+  "meta": {
+    "schema_version": "story-system/v1",
+    "contract_type": "CHAPTER_BRIEF",
+    "generator_version": "phase1",
+    "chapter": 1
+  },
+  "override_allowed": {
+    "chapter_focus": "陈默接到异常求救电话，并在旧儿童手表上听见第一句回声。"
+  },
+  "chapter_directive": {
+    "time_anchor": "6月22日00:00，调度中心夜班。",
+    "chapter_span": "55分钟。",
+    "countdown": "手表回收 D-3。",
+    "goal": "陈默接到异常求救电话，并在旧儿童手表上听见第一句回声。",
+    "strand": "Quest。",
+    "antagonist_tier": "首卷反派未现身，只出现回收压力。",
+    "key_entities": [
+      "陈默",
+      "陈曦号码",
+      "旧儿童手表",
+      "120调度台"
+    ],
+    "chapter_end_open_question": "已故妹妹的号码为什么能拨入急救中心。",
+    "cbn": "陈默 | 接入 | 零点后的异常求救电话",
+    "cpns": [
+      "陈默 | 按流程追问 | 求救者位置与伤情",
+      "调度系统 | 显示 | 来电号码无法正常回拨",
+      "陈默 | 触碰 | 被送来的旧儿童手表",
+      "旧儿童手表 | 留下 | “别让他们找到哥哥”的回声"
+    ],
+    "cen": "陈默 | 查到 | 来电号码属于已故妹妹陈曦",
+    "must_cover_nodes": [
+      "陈默 | 接入 | 零点后的异常求救电话",
+      "旧儿童手表 | 留下 | “别让他们找到哥哥”的回声",
+      "陈默 | 查到 | 来电号码属于已故妹妹陈曦"
+    ],
+    "forbidden_zones": [
+      "不得解释静默计划全貌",
+      "不得确认陈曦生还",
+      "不得让陈默主动破案越权",
+      "不得出现第二句回声。"
+    ],
+    "source": "chapter_outline"
+  },
+  "dynamic_context": [
+    {
+      "编号": "SY-042",
+      "适用技能": "init|plan|write",
+      "分类": "设定",
+      "层级": "知识补充",
+      "关键词": "金手指获取|外挂来源|觉醒方式|继承系统|获得能力",
+      "意图与同义词": "金手指怎么得到|外挂来源怎么设计|主角凭什么拿到能力",
+      "适用题材": "玄幻|都市|科幻|悬疑",
+      "大模型指令": "先确定金手指来源和获取条件，再决定为什么偏偏落到主角手里，避免无缘无故天降外挂。",
+      "核心摘要": "金手指获取方式决定了它的命运感、偶然感和是否会引来别人觊觎。",
+      "详细展开": "觉醒、继承、交易、捡漏、绑定、祭品换取都可以，但来源越清楚，后续逻辑越稳。",
+      "设定类型": "金手指获取方式分级",
+      "数值控制边界": "至少明确来源类型|首次获得条件|主角特殊性|被夺走风险",
+      "与剧情交互方式": "用于设计开局钩子、竞争者、命运伏笔和能力归属冲突",
+      "毒点": "",
+      "_table": "金手指与设定",
+      "_priority_rank": 999,
+      "_reasoning_rule": "都市",
+      "_chapter_keyword_score": 0,
+      "_combined_rank_score": 0.0
+    }
+  ],
+  "source_trace": [
+    {
+      "table": "题材与调性推理",
+      "id": "GR-010",
+      "reason": "keyword_or_alias_match"
+    },
+    {
+      "table": "金手指与设定",
+      "id": "SY-042",
+      "summary": "金手指获取方式决定了它的命运感、偶然感和是否会引来别人觊觎。",
+      "reasoning_rule": "都市",
+      "priority_rank": 999,
+      "chapter_keyword_score": 0,
+      "combined_rank_score": 0.0,
+      "inject_target": "CHAPTER_BRIEF.writing_guidance"
+    }
+  ],
+  "reasoning": {
+    "genre": "都市",
+    "inject_target": "CHAPTER_BRIEF.writing_guidance",
+    "style_priority": "日常轻松 > 温情治愈 > 微妙张力",
+    "pacing_strategy": "慢节奏 情感铺垫长 冲突柔和"
+  }
+}

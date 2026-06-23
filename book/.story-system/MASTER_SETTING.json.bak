@@ -1,0 +1,56 @@
+{
+  "meta": {
+    "schema_version": "story-system/v1",
+    "contract_type": "MASTER_SETTING",
+    "generator_version": "phase1",
+    "query": "第1章零点来电：陈默在临江市120急救调度中心夜班接到来自已停机三年的妹妹陈曦号码的求救电话；旧儿童手表被送到调度中心后，在零点后留下‘别让他们找到哥哥’的回声；本章只建立零点回声初听规则、调度职业压力和妹妹号码钩子，不揭示静默计划全貌，不确认陈曦生还。"
+  },
+  "route": {
+    "primary_genre": "都市异能",
+    "canonical_genre": "都市",
+    "route_source": "keyword_or_alias_match",
+    "genre_filter": "都市",
+    "recommended_base_tables": [
+      "金手指与设定",
+      "场景写法",
+      "人设与关系"
+    ],
+    "recommended_dynamic_tables": [
+      "爽点与节奏",
+      "桥段套路",
+      "场景写法"
+    ]
+  },
+  "master_constraints": {
+    "core_tone": "现代秩序下的能力反差",
+    "pacing_strategy": "三章内展示能力代价与首次实战"
+  },
+  "base_context": [],
+  "source_trace": [
+    {
+      "table": "题材与调性推理",
+      "id": "GR-010",
+      "reason": "keyword_or_alias_match"
+    },
+    {
+      "table": "金手指与设定",
+      "id": "SY-042",
+      "summary": "金手指获取方式决定了它的命运感、偶然感和是否会引来别人觊觎。",
+      "reasoning_rule": "都市",
+      "priority_rank": 999,
+      "chapter_keyword_score": 0,
+      "combined_rank_score": 0.0,
+      "inject_target": "CHAPTER_BRIEF.writing_guidance"
+    }
+  ],
+  "override_policy": {
+    "locked": [
+      "route.primary_genre",
+      "master_constraints.core_tone"
+    ],
+    "append_only": [
+      "anti_patterns"
+    ],
+    "override_allowed": []
+  }
+}

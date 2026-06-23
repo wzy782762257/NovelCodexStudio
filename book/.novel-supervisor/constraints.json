@@ -1,0 +1,35 @@
+{
+  "constraint_library": [
+    {
+      "id": "tempo_fast",
+      "name": "快节奏",
+      "must": ["对话占比超过40%", "每300字必须有一个动作或转折"],
+      "forbidden": ["环境描写超过2句", "内心独白超过1段"]
+    },
+    {
+      "id": "tempo_slow",
+      "name": "慢节奏",
+      "must": ["每个动作至少配一个感官细节", "场景转换不超过2次"],
+      "forbidden": ["对话超过3句连续", "跳过可描写的时间"]
+    },
+    {
+      "id": "intensity_peak",
+      "name": "高潮",
+      "must": ["至少一个\"不可回退\"的事件发生", "主角被迫做出选择"],
+      "forbidden": ["解释性段落", "回忆超过2句"]
+    },
+    {
+      "id": "intensity_build",
+      "name": "蓄力",
+      "must": ["信息增量逐层加码", "至少一个被验证的伏笔"],
+      "forbidden": ["直接暴露真相", "提前兑现高潮"]
+    },
+    {
+      "id": "intensity_recover",
+      "name": "缓冲",
+      "must": ["主角获得一条可操作的线索", "建立新的行动目标"],
+      "forbidden": ["新悬念超过1个", "无目的的情绪渲染"]
+    }
+  ],
+  "chapter_constraints": {}
+}

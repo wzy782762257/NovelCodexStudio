@@ -1,0 +1,39 @@
+{
+  "meta": {
+    "schema_version": "story-system/v1",
+    "contract_type": "VOLUME_BRIEF",
+    "generator_version": "phase2",
+    "source_trace": []
+  },
+  "volume_goal": {
+    "summary": "第1卷延续 都市异能 的主冲突"
+  },
+  "selected_tropes": [
+    "都市异能"
+  ],
+  "selected_pacing": {
+    "wave": "三章内展示能力代价与首次实战"
+  },
+  "selected_scenes": [
+    "陈默 | 按流程追问 | 求救者位置与伤情",
+    "调度系统 | 显示 | 来电号码无法正常回拨",
+    "陈默 | 触碰 | 被送来的旧儿童手表",
+    "旧儿童手表 | 留下 | “别让他们找到哥哥”的回声"
+  ],
+  "anti_patterns": [
+    "异能无代价",
+    "现代秩序消失",
+    "战斗后没有后果",
+    "情感靠标签",
+    "日常无冲突",
+    "角色千人一面"
+  ],
+  "system_constraints": [
+    "现代秩序下的能力反差"
+  ],
+  "overrides": {
+    "locked": {},
+    "append_only": {},
+    "override_allowed": {}
+  }
+}

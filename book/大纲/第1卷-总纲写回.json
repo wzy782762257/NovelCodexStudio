@@ -1,0 +1,54 @@
+{
+  "next_volume_anchor": {
+    "volume": 2,
+    "volume_name": "白床单下的名单",
+    "core_conflict": "医院急诊与心理干预档案暴露样本筛选链，陈默追查陈曦送医当晚被改写的病历记录",
+    "volume_end_climax": "韩绎第一次正面下场，陈默找回妹妹送医当晚的一个关键片段"
+  },
+  "foreshadow_writeback": [
+    {
+      "content": "已停机三年的陈曦号码在第1章拨入120，卷末确认号码被静默计划保留使用",
+      "buried_chapter": "第1章",
+      "payoff_chapter": "第40章",
+      "level": "主线"
+    },
+    {
+      "content": "旧儿童手表回声里的“哥哥”存在指代歧义，首卷只确认不是单一指向成年陈默",
+      "buried_chapter": "第1章",
+      "payoff_chapter": "",
+      "level": "主线"
+    },
+    {
+      "content": "三年前调班记录与陈默记忆不一致，指向陈曦事故夜被人为改写",
+      "buried_chapter": "第3章",
+      "payoff_chapter": "第90章",
+      "level": "卷际"
+    },
+    {
+      "content": "韩绎以“韩医生”身份进入线索边缘，卷末通过无声电话开启医院卷",
+      "buried_chapter": "第18章",
+      "payoff_chapter": "",
+      "level": "主线"
+    }
+  ],
+  "open_loop_writeback": [
+    {
+      "content": "陈曦号码为什么能继续接入通信与急救系统",
+      "buried_chapter": "第1章",
+      "payoff_chapter": "",
+      "level": "持续开放环"
+    },
+    {
+      "content": "静默计划为什么把陈默列入样本名单",
+      "buried_chapter": "第38章",
+      "payoff_chapter": "",
+      "level": "持续开放环"
+    },
+    {
+      "content": "陈默每次主动深挖回声损失的记忆能否被可靠记录或恢复",
+      "buried_chapter": "第7章",
+      "payoff_chapter": "",
+      "level": "持续开放环"
+    }
+  ]
+}

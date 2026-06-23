@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>导出与发布 - Novel Codex Studio</title>
+  <link rel="stylesheet" href="/css/common.css">
+  <style>
+    .export-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .export-card { background: var(--panel); border: 1px solid var(--line-subtle); border-radius: 10px; padding: 20px; }
+    .export-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+    .export-card p { font-size: 13px; color: var(--text-tertiary); margin-bottom: 16px; }
+    .export-formats { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .format-btn { padding: 8px 16px; border: 1px solid var(--line-subtle); border-radius: 6px; background: var(--bg-elevated); color: var(--text-secondary); font-size: 13px; cursor: pointer; transition: all 0.15s ease; }
+    .format-btn:hover, .format-btn.selected { border-color: var(--blue); color: var(--blue); background: rgba(52,135,255,0.08); }
+    .platform-list { display: flex; flex-direction: column; gap: 10px; }
+    .platform-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-elevated); border-radius: 8px; border: 1px solid var(--line-subtle); cursor: pointer; transition: all 0.15s ease; }
+    .platform-item:hover { border-color: var(--blue); }
+    .platform-icon { width: 40px; height: 40px; border-radius: 8px; display: grid; place-items: center; font-size: 18px; background: var(--panel); }
+    .platform-info { flex: 1; }
+    .platform-info strong { font-size: 13px; display: block; }
+    .platform-info span { font-size: 11px; color: var(--text-tertiary); }
+    .preview-area { background: var(--bg-elevated); border: 1px solid var(--line-subtle); border-radius: 8px; padding: 16px; font-size: 13px; color: var(--text-secondary); line-height: 1.6; max-height: 300px; overflow: auto; }
+    .preview-area h4 { font-size: 14px; color: var(--text-primary); margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <div class="app-frame">
+    <nav class="side-nav">
+      <div class="nav-brand">◆</div>
+      <a href="/" class="nav-item"><span class="icon">💡</span><span class="label">选题</span></a>
+      <a href="/foundation.html" class="nav-item"><span class="icon">🏗</span><span class="label">框架</span></a>
+      <a href="/outline.html" class="nav-item"><span class="icon">📋</span><span class="label">大纲</span></a>
+      <a href="/dashboard.html" class="nav-item"><span class="icon">📊</span><span class="label">指挥</span></a>
+      <a href="/pipeline.html" class="nav-item"><span class="icon">⚙</span><span class="label">流水线</span></a>
+      <a href="/issues.html" class="nav-item"><span class="icon">⚠</span><span class="label">问题</span></a>
+      <a href="/export.html" class="nav-item active"><span class="icon">📤</span><span class="label">导出</span></a>
+      <div class="nav-spacer"></div>
+      <a href="/settings.html" class="nav-item"><span class="icon">⚙</span><span class="label">设置</span></a>
+    </nav>
+
+    <div class="main-content">
+      <header class="topbar">
+        <div class="topbar-left">
+          <span class="breadcrumb"><strong>导出与发布</strong> / 格式导出 · 平台上传</span>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <div class="page-header">
+          <h1>导出与发布</h1>
+          <p>将完成的正文导出为多种格式，或一键上传到发布平台</p>
+        </div>
+
+        <div class="export-grid">
+          <div class="export-card">
+            <h3>📄 格式导出</h3>
+            <p>选择导出格式，下载到本地</p>
+            <div class="export-formats">
+              <button class="format-btn selected">Markdown</button>
+              <button class="format-btn">TXT</button>
+              <button class="format-btn">Word</button>
+              <button class="format-btn">PDF</button>
+              <button class="format-btn">EPUB</button>
+            </div>
+            <div class="action-buttons" style="margin-top: 16px;">
+              <button class="btn btn-primary">📥 导出全部章节</button>
+              <button class="btn btn-ghost">📥 导出选定章节</button>
+            </div>
+          </div>
+
+          <div class="export-card">
+            <h3>🚀 平台发布</h3>
+            <p>选择目标平台，一键上传或自动发布</p>
+            <div class="platform-list">
+              <div class="platform-item">
+                <div class="platform-icon">🍅</div>
+                <div class="platform-info">
+                  <strong>番茄小说</strong>
+                  <span>字节跳动旗下免费阅读平台</span>
+                </div>
+                <button class="btn btn-primary btn-sm">上传</button>
+              </div>
+              <div class="platform-item">
+                <div class="platform-icon">📚</div>
+                <div class="platform-info">
+                  <strong>起点中文网</strong>
+                  <span>阅文集团付费阅读平台</span>
+                </div>
+                <button class="btn btn-primary btn-sm">上传</button>
+              </div>
+              <div class="platform-item">
+                <div class="platform-icon">🌐</div>
+                <div class="platform-info">
+                  <strong>Web发布</strong>
+                  <span>生成独立网页，分享链接</span>
+                </div>
+                <button class="btn btn-primary btn-sm">生成</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="export-card" style="grid-column: span 2;">
+            <h3>👁 预览</h3>
+            <div class="preview-area" id="preview-area">
+              <h4>第1章 妹妹死后三年，我接到了她的求救电话</h4>
+              <p>凌晨零点零三分，陈默接到了妹妹的求救电话。</p>
+              <p>问题是，陈曦已经死了三年。</p>
+              <p>电话刚接进临江市急救中心时，陈默并不知道是她。</p>
+              <p>...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/common.js"></script>
+</body>
+</html>
