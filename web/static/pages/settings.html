@@ -147,12 +147,16 @@
     });
 
     async function saveSettings() {
+      const apiKeyInput = document.getElementById('api-key');
       const settings = {
         model: document.getElementById('model-name').value,
         max_tokens: parseInt(document.getElementById('max-tokens').value),
         batch_size: parseInt(document.getElementById('batch-size').value),
         quality_threshold: parseInt(document.getElementById('quality-threshold').value),
       };
+      if (apiKeyInput && apiKeyInput.value.trim().length > 10) {
+        settings.api_key = apiKeyInput.value.trim();
+      }
       try {
         await api('POST', '/settings', settings);
         showToast('设置已保存', 'success');

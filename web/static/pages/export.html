@@ -64,8 +64,8 @@
               <button class="format-btn">EPUB</button>
             </div>
             <div class="action-buttons" style="margin-top: 16px;">
-              <button class="btn btn-primary">📥 导出全部章节</button>
-              <button class="btn btn-ghost">📥 导出选定章节</button>
+              <button class="btn btn-primary" onclick="exportAll()">📥 导出全部章节</button>
+              <button class="btn btn-ghost" onclick="loadPreview()">👁 预览</button>
             </div>
           </div>
 
@@ -79,7 +79,7 @@
                   <strong>番茄小说</strong>
                   <span>字节跳动旗下免费阅读平台</span>
                 </div>
-                <button class="btn btn-primary btn-sm">上传</button>
+                <button class="btn btn-primary btn-sm" disabled>上传</button>
               </div>
               <div class="platform-item">
                 <div class="platform-icon">📚</div>
@@ -87,7 +87,7 @@
                   <strong>起点中文网</strong>
                   <span>阅文集团付费阅读平台</span>
                 </div>
-                <button class="btn btn-primary btn-sm">上传</button>
+                <button class="btn btn-primary btn-sm" disabled>上传</button>
               </div>
               <div class="platform-item">
                 <div class="platform-icon">🌐</div>
@@ -95,7 +95,7 @@
                   <strong>Web发布</strong>
                   <span>生成独立网页，分享链接</span>
                 </div>
-                <button class="btn btn-primary btn-sm">生成</button>
+                <button class="btn btn-primary btn-sm" disabled>生成</button>
               </div>
             </div>
           </div>
@@ -103,11 +103,7 @@
           <div class="export-card" style="grid-column: span 2;">
             <h3>👁 预览</h3>
             <div class="preview-area" id="preview-area">
-              <h4>第1章 妹妹死后三年，我接到了她的求救电话</h4>
-              <p>凌晨零点零三分，陈默接到了妹妹的求救电话。</p>
-              <p>问题是，陈曦已经死了三年。</p>
-              <p>电话刚接进临江市急救中心时，陈默并不知道是她。</p>
-              <p>...</p>
+              <p style="color:var(--text-tertiary)">点击「预览」加载正文内容</p>
             </div>
           </div>
         </div>
@@ -116,5 +112,37 @@
   </div>
 
   <script src="/js/common.js"></script>
+  <script>
+    const { api } = window.NCS;
+
+    async function exportAll() {
+      window.location.href = '/api/export/download';
+    }
+
+    async function loadPreview() {
+      try {
+        const res = await api('GET', '/export');
+        if (res.ok) {
+          const lines = res.content.split('\n').filter(l => l.trim());
+          let html = '';
+          let inHeader = false;
+          lines.forEach(line => {
+            if (line.startsWith('#')) {
+              html += `<h4>${line.replace(/^#+\s*/, '')}</h4>`;
+            } else if (line.trim() === '---') {
+              html += '<hr style="border-color:var(--line-subtle);margin:12px 0;">';
+            } else {
+              html += `<p>${line}</p>`;
+            }
+          });
+          document.getElementById('preview-area').innerHTML = html;
+        } else {
+          document.getElementById('preview-area').innerHTML = `<p style="color:var(--text-tertiary)">${res.error || '无内容'}</p>`;
+        }
+      } catch (e) {
+        document.getElementById('preview-area').innerHTML = `<p style="color:var(--text-tertiary)">加载失败</p>`;
+      }
+    }
+  </script>
 </body>
 </html>

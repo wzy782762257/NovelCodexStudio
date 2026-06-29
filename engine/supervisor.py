@@ -208,6 +208,7 @@ class Supervisor:
                     issues=[f"单章运行超时 ({round(elapsed, 1)}s > {self.max_runtime}s)"],
                     next_action="增加 max_runtime 或检查 LLM 响应速度",
                     elapsed=elapsed,
+                    error_category="transient",
                 )
             return None
 
@@ -221,6 +222,8 @@ class Supervisor:
             if data:
                 entry["data"] = data
             events.append(entry)
+            # Also emit to stdout for platform real-time consumption
+            print(json.dumps(entry, ensure_ascii=False), flush=True)
 
         if dry_run:
             packet_path = self._ensure_context_packet(chapter)
@@ -254,7 +257,8 @@ class Supervisor:
             if not prewrite.get("ok"):
                 return self._build_result(
                     chapter, "retryable", False, events, event_path, result_path,
-                    started, issues=["prewrite gate 失败"], next_action="修复 prewrite 错误后重试"
+                    started, issues=["prewrite gate 失败"], next_action="修复 prewrite 错误后重试",
+                    error_category="transient",
                 )
 
             # Step 3: Write draft
@@ -301,6 +305,7 @@ class Supervisor:
                             "revision_count": revision_count,
                             "scores": review_result["scores"],
                         },
+                        error_category="content",
                     )
 
             # Step 4a: Elevate (if any score below 70 or AI traces found)
@@ -358,6 +363,7 @@ AI痕迹：{ai_traces}
                             "revision_count": revision_count,
                             "scores": review_result["scores"],
                         },
+                        error_category="content",
                     )
 
             # Step 5: Save chapter file
@@ -391,6 +397,7 @@ AI痕迹：{ai_traces}
                         "revision_count": revision_count,
                         "scores": review_result["scores"],
                     },
+                    error_category="content",
                 )
 
             # Step 7: Save artifacts to tmp
@@ -411,6 +418,7 @@ AI痕迹：{ai_traces}
                         "revision_count": revision_count,
                         "scores": review_result["scores"],
                     },
+                    error_category="config",
                 )
 
             # Step 9: chapter-commit
@@ -431,6 +439,7 @@ AI痕迹：{ai_traces}
                         "revision_count": revision_count,
                         "scores": review_result["scores"],
                     },
+                    error_category="config",
                 )
 
             # Step 10: postcommit gate
@@ -445,6 +454,7 @@ AI痕迹：{ai_traces}
                         "revision_count": revision_count,
                         "scores": review_result["scores"],
                     },
+                    error_category="transient",
                 )
 
             # Success
@@ -461,6 +471,7 @@ AI痕迹：{ai_traces}
                 },
                 elapsed=elapsed,
                 commit=commit,
+                error_category=None,
             )
 
         except Exception as exc:
@@ -472,6 +483,7 @@ AI痕迹：{ai_traces}
                 issues=[f"异常: {exc}"],
                 next_action=f"检查日志 {event_path}",
                 elapsed=elapsed,
+                error_category="transient",
             )
 
     def _self_absorb(self, chapter: int, review_result: dict[str, Any], artifacts: dict[str, Any]) -> None:
@@ -537,6 +549,7 @@ AI痕迹：{ai_traces}
         quality_gate: dict[str, Any] | None = None,
         elapsed: float = 0,
         commit: dict[str, Any] | None = None,
+        error_category: str | None = None,
     ) -> dict[str, Any]:
         if elapsed == 0:
             elapsed = round(time.monotonic() - started, 2)
@@ -560,6 +573,7 @@ AI痕迹：{ai_traces}
             "elapsed_seconds": elapsed,
             "event_log": str(event_path),
             "commit": commit or {},
+            "error_category": error_category,
         }
 
         # Save result
@@ -574,7 +588,7 @@ AI痕迹：{ai_traces}
         return result
 
     def run_batch(self, start: int, count: int, dry_run: bool = False) -> list[dict[str, Any]]:
-        """Run a batch of chapters."""
+        """Run a batch of chapters with automatic retry for transient failures."""
         checkpoint = Checkpoint.load(self.checkpoint_path)
         if start < 1:
             start = checkpoint.last_committed_chapter + 1
@@ -585,7 +599,29 @@ AI痕迹：{ai_traces}
 
         with ProcessLock(self.lock_path):
             for chapter in range(start, start + count):
-                result = self.run_chapter(chapter, dry_run=dry_run)
+                max_retries = 3 if not dry_run else 0
+                attempt = 0
+                result = None
+
+                while attempt <= max_retries:
+                    result = self.run_chapter(chapter, dry_run=dry_run)
+
+                    # Retry only transient errors
+                    if result.get("status") == "committed":
+                        break
+                    category = result.get("error_category")
+                    if category != "transient":
+                        break
+                    attempt += 1
+                    if attempt <= max_retries:
+                        print(json.dumps({
+                            "at": self._utc_now(),
+                            "chapter": chapter,
+                            "step": "retry",
+                            "status": "scheduled",
+                            "data": {"attempt": attempt, "max": max_retries, "reason": category},
+                        }, ensure_ascii=False), flush=True)
+
                 results.append(result)
 
                 if dry_run:

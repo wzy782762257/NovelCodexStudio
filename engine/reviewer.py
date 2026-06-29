@@ -154,6 +154,11 @@ CEN：{directive.get('cen', '')}
         directive = reader._directive()
         must_cover = directive.get("must_cover_nodes", [])
 
+        # Structural markers (CBN, CEN) are structural directives, not content
+        # nodes to be checked for coverage. Filter them out before asking LLM.
+        structural_markers = {"CBN", "CEN"}
+        real_nodes = [n for n in must_cover if n not in structural_markers]
+
         system = """你是一位情节分析师。你的任务是检查正文是否覆盖了所有必须节点，输出 JSON。
 
 重要：只检查"必须覆盖节点"（must_cover_nodes）列表中的内容。CBN、CEN、章末未闭合问题等是章节的结构性信息，不是必须覆盖的节点，不要将它们列入检查范围。
@@ -171,7 +176,7 @@ CEN：{directive.get('cen', '')}
 - 但如果完全没有提及或暗示，则算遗漏。
 - 返回的节点名称应该与原始 must_cover_nodes 保持一致。"""
 
-        user = f"""必须覆盖节点：{must_cover}
+        user = f"""必须覆盖节点：{real_nodes}
 
 正文：
 {body}

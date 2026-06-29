@@ -107,19 +107,7 @@
         chapters = await api('GET', '/chapters');
         renderTable(chapters);
       } catch (e) {
-        // 模拟数据
-        chapters = [
-          { number: 1, title: '妹妹死后三年，我接到了她的求救电话', status: 'committed', scores: { overall: 92 }, words: 2019, elapsed: 180 },
-          { number: 2, title: '无法回拨', status: 'committed', scores: { overall: 88 }, words: 2002, elapsed: 165 },
-          { number: 3, title: '停机三年', status: 'draft', scores: { overall: 75 }, words: 0, elapsed: 0 },
-          { number: 4, title: '旧表背面', status: 'fail', scores: { overall: 0 }, words: 0, elapsed: 276 },
-          { number: 5, title: '第5章', status: 'pending', scores: {}, words: 0, elapsed: 0 },
-          { number: 6, title: '第6章', status: 'pending', scores: {}, words: 0, elapsed: 0 },
-          { number: 7, title: '第7章', status: 'pending', scores: {}, words: 0, elapsed: 0 },
-          { number: 8, title: '第8章', status: 'pending', scores: {}, words: 0, elapsed: 0 },
-          { number: 9, title: '第9章', status: 'pending', scores: {}, words: 0, elapsed: 0 },
-          { number: 10, title: '第10章', status: 'pending', scores: {}, words: 0, elapsed: 0 },
-        ];
+        chapters = [];
         renderTable(chapters);
       }
     }
@@ -127,6 +115,11 @@
     function renderTable(data) {
       const tbody = qs('#pipeline-body');
       tbody.innerHTML = '';
+
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-tertiary);padding:40px;">暂无章节数据，启动引擎后将自动更新</td></tr>';
+        return;
+      }
 
       data.forEach(ch => {
         const tr = document.createElement('tr');

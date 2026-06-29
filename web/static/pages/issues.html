@@ -99,14 +99,7 @@
       try {
         issues = await api('GET', '/issues');
       } catch (e) {
-        // 模拟数据
-        issues = {
-          pending: [
-            { id: 'issue-1', level: '高', title: '遗漏节点: CBN, CEN', chapter: 4, body: '第4章在Fulfillment检查中遗漏了CBN（Chapter Begin Node）和CEN（Chapter End Node），导致章节结构不完整。', created_at: Date.now() / 1000 - 3600 },
-            { id: 'issue-2', level: '中', title: 'postcommit failed: projection vector', chapter: 1, body: 'embedding storage could not connect to api-inference.modelscope.cn under the current no-network run.', created_at: Date.now() / 1000 - 7200 },
-          ],
-          resolved: [],
-        };
+        issues = { pending: [], resolved: [] };
       }
     }
 

@@ -117,28 +117,8 @@
               </div>
 
               <div id="tab-review">
-                <div class="review-section">
-                  <h4>质量评分</h4>
-                  <div class="review-score"><span>剧情推进</span><div class="bar"><div class="fill" style="width:90%;background:var(--green)"></div></div><span>90</span></div>
-                  <div class="review-score"><span>角色一致</span><div class="bar"><div class="fill" style="width:85%;background:var(--green)"></div></div><span>85</span></div>
-                  <div class="review-score"><span>连续性</span><div class="bar"><div class="fill" style="width:88%;background:var(--green)"></div></div><span>88</span></div>
-                  <div class="review-score"><span>节奏</span><div class="bar"><div class="fill" style="width:92%;background:var(--green)"></div></div><span>92</span></div>
-                  <div class="review-score"><span>钩子</span><div class="bar"><div class="fill" style="width:95%;background:var(--green)"></div></div><span>95</span></div>
-                  <div class="review-score"><span>自然度</span><div class="bar"><div class="fill" style="width:90%;background:var(--green)"></div></div><span>90</span></div>
-                </div>
-                <div class="review-section">
-                  <h4>AI痕迹检查</h4>
-                  <div style="font-size: 12px; color: var(--green);">✓ 通过 - 未发现明显AI痕迹</div>
-                </div>
-                <div class="review-section">
-                  <h4>Nacharium 审查</h4>
-                  <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
-                    编辑: 叙事紧凑，对话有效推进信息<br>
-                    批评: 第3段可再压缩<br>
-                    读者: 钩子有效，想继续读<br>
-                    工程师: 无AI痕迹<br>
-                    连续性: 与第1章衔接自然
-                  </div>
+                <div class="review-section" style="color:var(--text-tertiary);padding:20px 0;text-align:center;">
+                  加载中...
                 </div>
               </div>
 
@@ -160,14 +140,7 @@
 
               <div id="tab-trace" style="display:none;">
                 <div class="trace-mini">
-                  <div class="trace-step"><span class="step-icon ok">✓</span><span>契约提取</span></div>
-                  <div class="trace-step"><span class="step-icon ok">✓</span><span>上下文打包</span></div>
-                  <div class="trace-step"><span class="step-icon ok">✓</span><span>Prewrite</span></div>
-                  <div class="trace-step"><span class="step-icon ok">✓</span><span>正文生成</span></div>
-                  <div class="trace-step"><span class="step-icon ok">✓</span><span>质量审查</span></div>
-                  <div class="trace-step"><span class="step-icon ok">✓</span><span>修订</span></div>
-                  <div class="trace-step"><span class="step-icon ok">✓</span><span>Fulfillment</span></div>
-                  <div class="trace-step"><span class="step-icon ok">✓</span><span>Commit</span></div>
+                  <div class="trace-step"><span class="step-icon pending">○</span><span>等待引擎运行...</span></div>
                 </div>
               </div>
             </div>
@@ -209,11 +182,78 @@
           qs('#btn-generate').style.display = 'none';
           qs('#btn-approve').style.display = 'inline-flex';
         }
+        
+        // Render review panel
+        renderReviewPanel(data);
+        // Render trace panel
+        renderTracePanel(data.trace || []);
       } catch (e) {
-        // 模拟内容
-        currentContent = `凌晨零点零三分，陈默接到了妹妹的求救电话。\n\n问题是，陈曦已经死了三年。\n\n电话刚接进临江市急救中心时，陈默并不知道是她。\n\n耳机里只有一个女人急促的呼吸声。她像躲在很窄的地方，说话时一直压着嗓子。\n\n"救救他……他流了好多血。"\n\n陈默坐直身体，手指落在键盘上。\n\n"这里是120。告诉我地址，伤者哪里受伤？"\n\n"河西旧表厂，六栋。"\n\n"几单元？"\n\n女人没有回答。\n\n电话那头传来一声巨响，像有人踹开了铁门。`;
+        currentContent = '';
         renderContent(currentContent);
+        qs('#chapter-subtitle').textContent = `第${n}章`;
       }
+    }
+
+    function renderReviewPanel(data) {
+      const scores = data.scores || {};
+      const scoreKeys = {
+        plot_progress: '剧情推进',
+        character_consistency: '角色一致',
+        continuity: '连续性',
+        pacing: '节奏',
+        chapter_hook: '钩子',
+        style_naturalness: '自然度',
+      };
+      let scoresHtml = '';
+      for (const [key, label] of Object.entries(scoreKeys)) {
+        const val = scores[key] || 0;
+        const color = val >= 90 ? 'var(--green)' : val >= 70 ? 'var(--blue)' : val >= 50 ? 'var(--amber)' : 'var(--red)';
+        scoresHtml += `<div class="review-score"><span>${label}</span><div class="bar"><div class="fill" style="width:${val}%;background:${color}"></div></div><span>${val}</span></div>`;
+      }
+      
+      const aiTraces = data.ai_traces || [];
+      let aiHtml = '';
+      if (aiTraces.length === 0) {
+        aiHtml = '<div style="font-size: 12px; color: var(--green);">✓ 通过 - 未发现明显AI痕迹</div>';
+      } else {
+        aiHtml = '<div style="font-size: 12px; color: var(--red);">✗ 发现 ' + aiTraces.length + ' 处AI痕迹</div><ul style="font-size:12px;color:var(--text-secondary);margin-top:4px;padding-left:16px;">' + aiTraces.map(t => `<li>${t}</li>`).join('') + '</ul>';
+      }
+      
+      const overall = data.overall_score || 0;
+      const passText = data.hard_pass ? '通过' : '未通过';
+      const passColor = data.hard_pass ? 'var(--green)' : 'var(--red)';
+      
+      qs('#tab-review').innerHTML = `
+        <div class="review-section">
+          <h4>质量评分 (综合 ${overall}) ${passText}</h4>
+          ${scoresHtml}
+        </div>
+        <div class="review-section">
+          <h4>AI痕迹检查</h4>
+          ${aiHtml}
+        </div>
+        <div class="review-section">
+          <h4>审查状态</h4>
+          <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
+            ${data.missed_nodes?.length ? `<span style="color:var(--red)">遗漏节点: ${data.missed_nodes.join(', ')}</span>` : '所有节点已覆盖'}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderTracePanel(trace) {
+      if (!trace.length) {
+        qs('#tab-trace').innerHTML = '<div class="trace-mini"><div class="trace-step"><span class="step-icon pending">○</span><span>等待引擎运行...</span></div></div>';
+        return;
+      }
+      let html = '<div class="trace-mini">';
+      trace.forEach(t => {
+        const icon = t.ok ? '✓' : t.fail ? '✗' : '○';
+        const cls = t.ok ? 'ok' : t.fail ? 'fail' : 'pending';
+        html += `<div class="trace-step"><span class="step-icon ${cls}">${icon}</span><span>${t.name}</span></div>`;
+      });
+      html += '</div>';
+      qs('#tab-trace').innerHTML = html;
     }
 
     function renderContent(text) {
