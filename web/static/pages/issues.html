@@ -170,6 +170,7 @@
           <div class="issue-actions">
             <button class="btn btn-primary" onclick="resolveIssue()">标记为已解决</button>
             <button class="btn btn-ghost" onclick="openChapter(${issue.chapter})">跳转到章节</button>
+            <button class="btn btn-primary" style="background:var(--green);margin-left:auto;" onclick="retryIssue(${issue.chapter})">🔄 重试生成</button>
           </div>
         ` : `
           <div class="detail-section">
@@ -197,6 +198,19 @@
         });
       });
     }
+
+    window.retryIssue = async function(n) {
+      try {
+        const result = await window.NCS.startEngine(n);
+        if (result.ok) {
+          showToast(`第 ${n} 章重试任务已启动`, 'success');
+        } else {
+          showToast(result.error || '重试失败', 'error');
+        }
+      } catch (e) {
+        showToast(`重试失败: ${e.message}`, 'error');
+      }
+    };
 
     window.resolveIssue = async function() {
       if (!selectedIssue) return;

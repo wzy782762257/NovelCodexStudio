@@ -280,40 +280,102 @@
     // Auto-count on edit
     document.addEventListener('input', updateWordCount);
 
-    async function saveContent() {
-      const paragraphs = Array.from(qsa('.paragraph-text')).map(p => p.textContent);
-      const content = paragraphs.join('\n');
+    async function generateChapter() {
+      const btn = qs('#btn-generate');
+      btn.disabled = true;
+      btn.textContent = '⏳ 启动中...';
       try {
-        await api('PUT', `/chapters/${chapterNum}/content`, { content });
-        showToast('已保存', 'success');
+        const result = await window.NCS.startEngine(chapterNum);
+        if (result.ok) {
+          // 启动后进入轮询，检测是否立即失败
+          showToast(`第 ${chapterNum} 章生成任务已启动 (PID: ${result.pid})`, 'success');
+          await monitorEngineStartup();
+        } else {
+          showToast(result.error || '启动失败', 'error');
+        }
       } catch (e) {
-        showToast('保存失败', 'error');
+        showToast(`启动失败: ${e.message}`, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '▶ 生成';
       }
     }
 
-    function generateChapter() {
-      api('POST', '/engine/start', { chapter: chapterNum }).then(r => {
-        if (r.ok) showToast(`第 ${chapterNum} 章生成任务已启动`, 'success');
-        else showToast(r.error, 'error');
-      });
+    async function regenerateChapter() {
+      const btn = qs('#btn-generate');
+      btn.disabled = true;
+      btn.textContent = '⏳ 重跑中...';
+      try {
+        const result = await window.NCS.startEngine(chapterNum);
+        if (result.ok) {
+          showToast(`第 ${chapterNum} 章重跑任务已启动`, 'success');
+          await monitorEngineStartup();
+        } else {
+          showToast(result.error || '重跑失败', 'error');
+        }
+      } catch (e) {
+        showToast(`重跑失败: ${e.message}`, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '▶ 生成';
+      }
+    }
+
+    // 监控引擎启动后是否立即失败（prewrite gate 等）
+    async function monitorEngineStartup() {
+      // 等待 5 秒后检查状态
+      await new Promise(r => setTimeout(r, 5000));
+      try {
+        const status = await api('GET', '/engine/status');
+        if (status.status === 'idle') {
+          // 引擎已退出，可能失败了
+          showToast('引擎启动后立即退出，可能 prewrite gate 失败或配置错误', 'error');
+          // 刷新章节状态以获取最新问题
+          await loadChapter(chapterNum);
+        } else if (status.status === 'running') {
+          showToast('引擎运行中，请稍后查看结果', 'info');
+          // 开始轮询章节状态
+          pollChapterStatus();
+        }
+      } catch (e) {
+        console.error('Monitor error:', e);
+      }
+    }
+
+    // 轮询章节状态直到完成或失败
+    let _chapterPollTimer = null;
+    function pollChapterStatus() {
+      if (_chapterPollTimer) return;
+      _chapterPollTimer = setInterval(async () => {
+        try {
+          const data = await api('GET', `/chapters/${chapterNum}`);
+          if (data.status === 'committed' || data.status === 'failed') {
+            clearInterval(_chapterPollTimer);
+            _chapterPollTimer = null;
+            showToast(`第 ${chapterNum} 章 ${data.status === 'committed' ? '已完成' : '失败'}`, data.status === 'committed' ? 'success' : 'error');
+            await loadChapter(chapterNum);
+          }
+          // 更新轨迹面板
+          renderTracePanel(data.trace || []);
+        } catch (e) {
+          console.error('Chapter poll error:', e);
+        }
+      }, 5000);
     }
 
     function approveChapter() {
       api('POST', `/chapters/${chapterNum}/approve`).then(() => {
         showToast('已批准', 'success');
-      });
-    }
-
-    function regenerateChapter() {
-      api('POST', '/engine/start', { chapter: chapterNum }).then(r => {
-        if (r.ok) showToast(`第 ${chapterNum} 章重跑任务已启动`, 'success');
-        else showToast(r.error, 'error');
+      }).catch(e => {
+        showToast('批准失败: ' + (e.message || ''), 'error');
       });
     }
 
     function rejectChapter() {
       api('POST', `/chapters/${chapterNum}/reject`).then(() => {
         showToast('已退回', 'info');
+      }).catch(e => {
+        showToast('退回失败: ' + (e.message || ''), 'error');
       });
     }
 

@@ -158,6 +158,28 @@ class PlatformState:
                     break
         self.save()
 
+    # 设置章节为 approved 状态
+    def approve_chapter(self, chapter: int):
+        chapters = self._data.setdefault("progress", {}).setdefault("production", {}).setdefault("chapters", [])
+        for c in chapters:
+            if c.get("chapter") == chapter:
+                c["status"] = "committed"
+                c["committed"] = True
+                self.save()
+                return True
+        return False
+
+    # 设置章节为 needs_fix 状态
+    def reject_chapter(self, chapter: int):
+        chapters = self._data.setdefault("progress", {}).setdefault("production", {}).setdefault("chapters", [])
+        for c in chapters:
+            if c.get("chapter") == chapter:
+                c["status"] = "needs_fix"
+                c["committed"] = False
+                self.save()
+                return True
+        return False
+
     def _sync_chapters_from_disk(self):
         """扫描磁盘正文文件，自动导入/更新平台状态"""
         import re
@@ -239,13 +261,14 @@ class EngineStateMachine:
             # 启动引擎进程
             try:
                 log_path = LOGS_DIR / f"engine-{int(time.time())}.log"
-                log_f = open(log_path, "w")
+                self._log_f = open(log_path, "w", encoding="utf-8")
                 self._proc = subprocess.Popen(
                     [
                         sys.executable,
                         str(ENGINE_DIR / "engine.py"),
                         "--start", str(chapter),
                         "--chapters", str(state.get("settings.batch_size") or 1),
+                        "--mode", mode,
                     ],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
@@ -321,6 +344,10 @@ class EngineStateMachine:
                     line = line.strip()
                     if not line:
                         continue
+                    # 同时写入日志文件
+                    if hasattr(self, '_log_f') and self._log_f:
+                        self._log_f.write(line + "\n")
+                        self._log_f.flush()
                     try:
                         event = json.loads(line)
                     except json.JSONDecodeError:
@@ -338,6 +365,13 @@ class EngineStateMachine:
                     self._proc = None
                     if state.get("engine.status") == "running":
                         state.set("engine.status", "idle")
+            # 关闭日志文件
+            if hasattr(self, '_log_f') and self._log_f:
+                try:
+                    self._log_f.close()
+                except Exception:
+                    pass
+                self._log_f = None
 
         def watch():
             consume_events()
@@ -649,6 +683,20 @@ def api_chapter_content_put(n):
     content = data.get("content", "")
     save_chapter_content(n, content)
     return jsonify({"ok": True, "chapter": n})
+
+
+@app.route("/api/chapters/<int:n>/approve", methods=["POST"])
+def api_chapter_approve(n):
+    """批准章节为已提交状态"""
+    ok = state.approve_chapter(n)
+    return jsonify({"ok": ok, "chapter": n, "status": "committed"})
+
+
+@app.route("/api/chapters/<int:n>/reject", methods=["POST"])
+def api_chapter_reject(n):
+    """退回章节为需要修复状态"""
+    ok = state.reject_chapter(n)
+    return jsonify({"ok": ok, "chapter": n, "status": "needs_fix"})
 
 
 # Settings

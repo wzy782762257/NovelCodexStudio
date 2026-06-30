@@ -17,11 +17,18 @@
         {
           "chapter": 1,
           "title": "妹妹死后三年，我接到了她的求救电话",
-          "status": "committed",
+          "status": "needs_fix",
           "word_count": 2019,
-          "committed": true,
-          "scores": {},
-          "hard_pass": false,
+          "committed": false,
+          "scores": {
+            "plot_progress": 85,
+            "character_consistency": 85,
+            "continuity": 85,
+            "pacing": 82,
+            "chapter_hook": 86,
+            "style_naturalness": 84
+          },
+          "hard_pass": true,
           "ai_traces": [],
           "steps": [
             {
@@ -40,8 +47,15 @@
           "status": "committed",
           "word_count": 2002,
           "committed": true,
-          "scores": {},
-          "hard_pass": false,
+          "scores": {
+            "plot_progress": 90,
+            "character_consistency": 85,
+            "continuity": 88,
+            "pacing": 92,
+            "chapter_hook": 95,
+            "style_naturalness": 90
+          },
+          "hard_pass": true,
           "ai_traces": [],
           "steps": [
             {
@@ -89,5 +103,5 @@
     "quality_threshold": 70
   },
   "created_at": null,
-  "updated_at": 1782781374.392127
+  "updated_at": 1782782798.880594
 }

@@ -28,6 +28,7 @@ def main() -> int:
     parser.add_argument("--doctor", action="store_true", help="运行项目体检后退出")
     parser.add_argument("--status", action="store_true", help="显示项目状态后退出")
     parser.add_argument("--check", action="store_true", help="检查环境配置后退出")
+    parser.add_argument("--mode", type=str, default="auto", help="运行模式: auto, pause, manual")
     args = parser.parse_args()
 
     config = EngineConfig.load(args.config)
