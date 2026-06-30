@@ -110,7 +110,7 @@
 
     async function init() {
       try {
-        const data = await api('GET', '/api/phase/foundation');
+        const data = await api('GET', '/phase/foundation');
         if (data.data?.world) qs('#world-setting').value = data.data.world;
         if (data.data?.plot) qs('#plot-arc').value = data.data.plot;
         if (data.data?.characters) renderCharacters(data.data.characters);
@@ -142,7 +142,7 @@
       const world = qs('#world-setting').value;
       const plot = qs('#plot-arc').value;
       try {
-        await api('POST', '/api/phase/foundation', { data: { world, plot } });
+        await api('POST', '/phase/foundation', { data: { world, plot } });
         showToast('已保存', 'success');
       } catch (e) {
         showToast('保存失败', 'error');
@@ -152,12 +152,11 @@
     async function generateFoundation() {
       showToast('AI 正在生成框架设计...', 'info');
       try {
-        // Get selected topic from project state
-        const project = await api('GET', '/api/project');
+        const project = await api('GET', '/project');
         const topicData = project.progress?.topic?.data || {};
         const topic = topicData.selected || {};
         
-        const resp = await api('POST', '/api/foundation/generate', { topic });
+        const resp = await api('POST', '/foundation/generate', { topic });
         if (!resp.ok) {
           showToast(resp.error || '生成失败', 'error');
           return;
@@ -168,8 +167,7 @@
         if (data.plot) qs('#plot-arc').value = data.plot;
         if (data.characters) renderCharacters(data.characters);
         
-        // Save to state
-        await api('POST', '/api/phase/foundation', { data });
+        await api('POST', '/phase/foundation', { data });
         showToast('AI 生成完成并已保存', 'success');
       } catch (e) {
         showToast('AI 生成失败: ' + e.message, 'error');
@@ -179,7 +177,7 @@
     async function completeFoundation() {
       await saveFoundation();
       try {
-        await api('POST', '/api/phase/foundation/complete');
+        await api('POST', '/phase/foundation/complete');
         showToast('框架设计完成，进入大纲', 'success');
         setTimeout(() => window.location.href = '/outline.html', 1000);
       } catch (e) {

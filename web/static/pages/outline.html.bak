@@ -96,7 +96,7 @@
 
     async function init() {
       try {
-        const data = await api('GET', '/phase/outline');
+        const data = await api('GET', '/api/phase/outline');
         const chapters = data.chapters || [];
         if (chapters.length > 0) {
           renderOutline(chapters);
@@ -140,9 +140,9 @@
       });
       try {
         // 1. Save to platform state
-        await api('POST', '/phase/outline', { chapters: items });
+        await api('POST', '/api/phase/outline', { chapters: items });
         // 2. Sync to engine context
-        await api('POST', '/outline/sync', { chapters: items });
+        await api('POST', '/api/outline/sync', { chapters: items });
         showToast('已保存并同步到引擎', 'success');
       } catch (e) {
         showToast('保存失败', 'error');

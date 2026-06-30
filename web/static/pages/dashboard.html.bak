@@ -352,7 +352,7 @@
 
     async function loadNotifications() {
       try {
-        const data = await api('GET', '/notifications?unread=true');
+        const data = await api('GET', '/api/notifications?unread=true');
         const notifs = data.notifications || [];
         notificationCount = notifs.length;
         renderNotifications(notifs);
@@ -381,7 +381,7 @@
 
     async function loadChapters() {
       try {
-        return await api('GET', '/chapters');
+        return await api('GET', '/api/chapters');
       } catch (e) {
         return [];
       }
@@ -389,7 +389,7 @@
 
     async function loadProjectState() {
       try {
-        const project = await api('GET', '/project');
+        const project = await api('GET', '/api/project');
         updatePhaseBar(project.phase);
         qs('#current-phase').textContent = phaseName(project.phase);
       } catch (e) {}
@@ -397,14 +397,14 @@
 
     async function loadEngineStatus() {
       try {
-        const status = await api('GET', '/engine/status');
+        const status = await api('GET', '/api/engine/status');
         updateEngineUI(status);
       } catch (e) {}
     }
 
     async function loadIssues() {
       try {
-        const issues = await api('GET', '/issues');
+        const issues = await api('GET', '/api/issues');
         qs('#pending-issues').textContent = issues.pending?.length || 0;
         renderIssueCompact(issues.pending?.slice(0, 3) || []);
       } catch (e) {}
@@ -516,7 +516,7 @@
         qsa('.mode-option').forEach(o => o.classList.remove('active'));
         opt.classList.add('active');
         const mode = opt.dataset.mode;
-        api('POST', '/settings', { mode });
+        api('POST', '/api/settings', { mode });
         showToast(`已切换为${mode === 'auto' ? '全自动' : mode === 'pause' ? '暂停' : '手动'}模式`);
       });
     });
@@ -527,29 +527,29 @@
       const mode = qs('.mode-option.active')?.dataset.mode || 'auto';
       const next = chapters.find(c => c.status !== 'committed') || { number: 1 };
       const chapter = next.number;
-      api('POST', '/engine/start', { chapter, mode }).then(r => {
+      api('POST', '/api/engine/start', { chapter, mode }).then(r => {
         if (r.ok) showToast(`引擎已启动 - 第 ${chapter} 章`, 'success');
         else showToast(r.error, 'error');
       });
     });
 
     on(qs('#btn-pause'), 'click', () => {
-      api('POST', '/engine/pause').then(() => showToast('引擎已暂停', 'info'));
+      api('POST', '/api/engine/pause').then(() => showToast('引擎已暂停', 'info'));
     });
 
     on(qs('#btn-resume'), 'click', () => {
-      api('POST', '/engine/resume').then(() => showToast('引擎已继续', 'success'));
+      api('POST', '/api/engine/resume').then(() => showToast('引擎已继续', 'success'));
     });
 
     on(qs('#btn-stop'), 'click', () => {
-      api('POST', '/engine/stop').then(() => showToast('引擎已停止', 'info'));
+      api('POST', '/api/engine/stop').then(() => showToast('引擎已停止', 'info'));
     });
 
     // Log polling
     function startLogPolling() {
       setInterval(async () => {
         try {
-          const logs = await api('GET', '/logs');
+          const logs = await api('GET', '/api/logs');
           const preview = qs('#log-preview');
           if (logs.length > 0 && logs[0].lines.length > 0) {
             preview.innerHTML = logs[0].lines.map(l => `<div>${escapeHtml(l)}</div>`).join('');

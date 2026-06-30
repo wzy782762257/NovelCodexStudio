@@ -126,11 +126,11 @@
     },
     "topic": {
       "data": {
-        "title": "测试",
-        "description": "测试",
-        "genre": "都市",
-        "tone": "悬疑",
-        "target_words": "80万字"
+        "title": "我在地府当喜剧演员的日子",
+        "description": "知名脱口秀演员车祸身亡后，被阎王亲自聘用地府喜剧综艺编导。他必须用段子感化千年厉鬼，但发现最可怕的不是鬼怪，而是地府观众们陈腐的笑点。",
+        "genre": "灵异轻喜剧",
+        "tone": "荒诞讽刺",
+        "target_words": "30万"
       },
       "completed": true
     }
@@ -147,5 +147,5 @@
     "quality_threshold": 70
   },
   "created_at": null,
-  "updated_at": 1782807138.357822
+  "updated_at": 1782807641.068458
 }
