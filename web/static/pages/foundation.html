@@ -96,9 +96,9 @@
         </div>
 
         <div class="action-bar">
-          <button class="btn btn-ghost" onclick="saveFoundation()">💾 保存</button>
-          <button class="btn btn-secondary" onclick="generateFoundation()">✨ AI 生成</button>
-          <button class="btn btn-primary" onclick="completeFoundation()">✓ 完成框架设计，进入大纲</button>
+          <button class="btn btn-ghost" id="btn-save-foundation">💾 保存</button>
+          <button class="btn btn-secondary" id="btn-generate-foundation">✨ AI 生成</button>
+          <button class="btn btn-primary" id="btn-complete-foundation">✓ 完成框架设计，进入大纲</button>
         </div>
       </div>
     </div>
@@ -107,15 +107,6 @@
   <script src="/js/common.js"></script>
   <script>
     const { api, showToast } = window.NCS;
-
-    async function init() {
-      try {
-        const data = await api('GET', '/phase/foundation');
-        if (data.data?.world) qs('#world-setting').value = data.data.world;
-        if (data.data?.plot) qs('#plot-arc').value = data.data.plot;
-        if (data.data?.characters) renderCharacters(data.data.characters);
-      } catch (e) {}
-    }
 
     function qs(sel) { return document.querySelector(sel); }
 
@@ -185,7 +176,22 @@
       }
     }
 
-    init();
+    // 绑定事件监听器
+    document.addEventListener('DOMContentLoaded', () => {
+      qs('#btn-save-foundation').addEventListener('click', saveFoundation);
+      qs('#btn-generate-foundation').addEventListener('click', generateFoundation);
+      qs('#btn-complete-foundation').addEventListener('click', completeFoundation);
+      
+      // 加载已有数据
+      (async () => {
+        try {
+          const data = await api('GET', '/phase/foundation');
+          if (data.data?.world) qs('#world-setting').value = data.data.world;
+          if (data.data?.plot) qs('#plot-arc').value = data.data.plot;
+          if (data.data?.characters) renderCharacters(data.data.characters);
+        } catch (e) {}
+      })();
+    });
   </script>
 </body>
 </html>
