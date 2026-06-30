@@ -842,14 +842,24 @@ def api_topics_generate():
                 print(f"[backend] Topic generation call {i+1} failed: {e}", file=sys.stderr)
                 continue
         
-        # Hard fallback only if ALL calls failed
+        # Hard fallback: if fewer than 3, fill in with preset topics
+        hard_fallbacks = [
+            {"title": "零点回声", "desc": "都市异能悬疑。主角是急救调度员，在凌晨接到死去妹妹的求救电话，逐渐发现城市存在一个'静默计划'——用声音操控记忆的阴谋。", "genre": "都市异能", "tone": "悬疑冷峻", "words": "80-100万字"},
+            {"title": "电话那头的她", "desc": "软科幻+情感。主角通过一部旧电话与三年前的妹妹对话，每次通话都会改变现在，但改变的方向越来越不可控。", "genre": "软科幻", "tone": "温情悬疑", "words": "60-80万字"},
+            {"title": "调度员的午夜档案", "desc": "单元剧+主线。每章是一个求救电话，背后都是超自然事件，主线是主角逐渐发现自己也在某个'实验'中。", "genre": "都市怪谈", "tone": "单元悬疑", "words": "100万字+"},
+        ]
+        
+        # If ALL calls failed, use all hard fallbacks
         if len(valid) == 0:
-            hard_fallbacks = [
-                {"title": "零点回声", "desc": "都市异能悬疑。主角是急救调度员，在凌晨接到死去妹妹的求救电话，逐渐发现城市存在一个'静默计划'——用声音操控记忆的阴谋。", "genre": "都市异能", "tone": "悬疑冷峻", "words": "80-100万字"},
-                {"title": "电话那头的她", "desc": "软科幻+情感。主角通过一部旧电话与三年前的妹妹对话，每次通话都会改变现在，但改变的方向越来越不可控。", "genre": "软科幻", "tone": "温情悬疑", "words": "60-80万字"},
-                {"title": "调度员的午夜档案", "desc": "单元剧+主线。每章是一个求救电话，背后都是超自然事件，主线是主角逐渐发现自己也在某个'实验'中。", "genre": "都市怪谈", "tone": "单元悬疑", "words": "100万字+"},
-            ]
             valid = hard_fallbacks
+        # If some calls succeeded but fewer than 3, fill remaining slots with hard fallbacks
+        elif len(valid) < 3:
+            existing_titles = {v["title"] for v in valid}
+            for fb in hard_fallbacks:
+                if fb["title"] not in existing_titles:
+                    valid.append(fb)
+                if len(valid) >= 3:
+                    break
         
         return jsonify({"ok": True, "suggestions": valid[:3], "source": "ai"})
     

@@ -123,21 +123,28 @@
           return;
         }
         
+        // Loading state
+        btn.disabled = true;
+        btn.dataset.originalText = btn.innerHTML;
+        btn.innerHTML = '<span>⏳</span> 生成中...';
+        
         showToast('正在生成选题方案...', 'info');
         
         try {
           const res = await api('POST', '/topics/generate', { input });
-          if (res.ok) {
+          if (res.ok && res.suggestions && res.suggestions.length > 0) {
             renderSuggestions(res.suggestions);
-            if (res.source === 'preset') {
-              showToast('已生成示例选题（AI 个性化生成即将上线）', 'info');
-            }
+            showToast(`已生成 ${res.suggestions.length} 个选题方案`, 'success');
           } else {
-            showToast(res.error || '生成失败', 'error');
+            showToast(res.error || '生成失败，请重试', 'error');
           }
         } catch (e) {
           console.error('Topic generation error:', e);
-          showToast('生成失败: ' + (e.message || ''), 'error');
+          showToast('生成失败: ' + (e.message || '网络错误'), 'error');
+        } finally {
+          // Restore button state
+          btn.disabled = false;
+          btn.innerHTML = btn.dataset.originalText || '<span>🎲</span> 生成选题方案';
         }
       });
 
