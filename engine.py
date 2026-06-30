@@ -71,11 +71,14 @@ def main() -> int:
 
     supervisor = Supervisor(config, max_runtime=args.max_runtime)
     checkpoint = supervisor.checkpoint_path
+    last = 0
     if checkpoint.exists():
-        cp = json.loads(checkpoint.read_text(encoding="utf-8"))
-        last = cp.get("last_committed_chapter", 0)
-    else:
-        last = 0
+        try:
+            cp = json.loads(checkpoint.read_text(encoding="utf-8"))
+            last = cp.get("last_committed_chapter", 0)
+        except (json.JSONDecodeError, Exception) as e:
+            print(f"Warning: checkpoint corrupted ({e}), starting from chapter 1", file=sys.stderr)
+            last = 0
 
     start = args.start or (last + 1)
     count = args.chapters or config.batch_size
@@ -83,7 +86,11 @@ def main() -> int:
         parser.error("start >= 1，chapters 必须在 1-20 之间")
 
     print(f"Starting batch: chapter {start} -> {start + count - 1} (dry_run={args.dry_run}, max_runtime={args.max_runtime}s)")
-    results = supervisor.run_batch(start, count, dry_run=args.dry_run)
+    try:
+        results = supervisor.run_batch(start, count, dry_run=args.dry_run)
+    except RuntimeError as e:
+        print(f"Engine failed: {e}", file=sys.stderr)
+        return 3
     for r in results:
         print(json.dumps(r, ensure_ascii=False, indent=2))
         if r.get("status") == "halted" and config.stop_on_halted:

@@ -92,10 +92,13 @@ class PlatformState:
         with self._lock:
             self._data["updated_at"] = time.time()
             PLATFORM_STATE.parent.mkdir(parents=True, exist_ok=True)
-            PLATFORM_STATE.write_text(
+            # Atomic write: temp file + rename
+            tmp = PLATFORM_STATE.with_suffix(".tmp")
+            tmp.write_text(
                 json.dumps(self._data, ensure_ascii=False, indent=2) + "\n",
                 encoding="utf-8",
             )
+            tmp.replace(PLATFORM_STATE)
     
     def get(self, key: str = None):
         with self._lock:
@@ -286,15 +289,25 @@ class EngineStateMachine:
     def pause(self):
         with self._lock:
             state.set("engine.status", "paused")
-            # 发送信号暂停引擎
+            # Send SIGSTOP to pause the engine process (if supported by OS)
             if self._proc and self._proc.poll() is None:
-                # 这里可以实现更优雅的暂停机制
-                pass
+                import signal
+                try:
+                    self._proc.send_signal(signal.SIGSTOP)
+                except Exception:
+                    pass
         return {"ok": True, "status": "paused"}
     
     def resume(self):
         with self._lock:
             state.set("engine.status", "running")
+            # Send SIGCONT to resume the engine process
+            if self._proc and self._proc.poll() is None:
+                import signal
+                try:
+                    self._proc.send_signal(signal.SIGCONT)
+                except Exception:
+                    pass
         return {"ok": True, "status": "running"}
     
     def stop(self):
@@ -487,9 +500,6 @@ class EngineStateMachine:
             return
         if next_chapter > target_chapters:
             return
-        # Prevent double-start race
-        if state.get("engine.status") != "idle" and state.get("engine.status") != "running":
-            return
 
         def delayed_start():
             time.sleep(3)  # brief pause between chapters
@@ -498,6 +508,7 @@ class EngineStateMachine:
                 return
             if state.get("engine.status") != "idle":
                 return
+            # start() already has its own lock check for duplicate starts
             self.start(next_chapter, mode="auto")
 
         threading.Thread(target=delayed_start, daemon=True).start()
@@ -525,7 +536,33 @@ def api_project_update():
 @app.route("/api/phase/<phase>")
 def api_phase_get(phase):
     """获取某阶段的数据"""
-    return jsonify(state.get(f"progress.{phase}") or {})
+    data = state.get(f"progress.{phase}") or {}
+    # For outline phase, if no data exists, build default from existing chapters
+    if phase == "outline" and not data.get("chapters"):
+        default_chapters = []
+        text_dir = BOOK_ROOT / "正文"
+        import re
+        for f in sorted(text_dir.glob("第*.md")):
+            m = re.search(r"第0*(\d+)章", f.name)
+            if not m:
+                continue
+            num = int(m.group(1))
+            content = f.read_text(encoding="utf-8")
+            title = ""
+            for line in content.split("\n")[:5]:
+                m2 = re.search(r"第\d+章\s*(.+)", line)
+                if m2:
+                    title = m2.group(1).strip()
+                    break
+            if not title:
+                title = f.name.replace(".md", "").split("-")[-1] if "-" in f.name else f"第{num}章"
+            default_chapters.append({"num": num, "title": title, "desc": ""})
+        # Pad to target chapters
+        target = state.get("engine.target_chapters") or 10
+        for i in range(len(default_chapters) + 1, target + 1):
+            default_chapters.append({"num": i, "title": f"第{i}章", "desc": ""})
+        data = {"chapters": default_chapters}
+    return jsonify(data)
 
 @app.route("/api/phase/<phase>", methods=["POST"])
 def api_phase_update(phase):
@@ -697,6 +734,39 @@ def api_chapter_reject(n):
     """退回章节为需要修复状态"""
     ok = state.reject_chapter(n)
     return jsonify({"ok": ok, "chapter": n, "status": "needs_fix"})
+
+
+@app.route("/api/topics/generate", methods=["POST"])
+def api_topics_generate():
+    """生成选题方案（当前返回预设示例，未来接入 AI 生成）"""
+    data = request.get_json() or {}
+    user_input = data.get("input", "")
+    # TODO: 接入 LLM 根据 user_input 生成个性化选题
+    # 目前返回几个示例选题供用户选择
+    suggestions = [
+        {
+            "title": "零点回声",
+            "desc": "都市异能悬疑。主角是急救调度员，在凌晨接到死去妹妹的求救电话，逐渐发现城市存在一个'静默计划'——用声音操控记忆的阴谋。",
+            "genre": "都市异能",
+            "tone": "悬疑冷峻",
+            "words": "80-100万字"
+        },
+        {
+            "title": "电话那头的她",
+            "desc": "软科幻+情感。主角通过一部旧电话与三年前的妹妹对话，每次通话都会改变现在，但改变的方向越来越不可控。",
+            "genre": "软科幻",
+            "tone": "温情悬疑",
+            "words": "60-80万字"
+        },
+        {
+            "title": "调度员的午夜档案",
+            "desc": "单元剧+主线。每章是一个求救电话，背后都是超自然事件，主线是主角逐渐发现自己也在某个'实验'中。",
+            "genre": "都市怪谈",
+            "tone": "单元悬疑",
+            "words": "100万字+"
+        }
+    ]
+    return jsonify({"ok": True, "suggestions": suggestions, "source": "preset"})
 
 
 # Settings

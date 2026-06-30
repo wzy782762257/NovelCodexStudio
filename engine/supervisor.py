@@ -137,7 +137,8 @@ class Supervisor:
         # Build packet using context_pack.py
         import subprocess
 
-        build_script = self.root.parent / "context_pack.py"
+        # Resolve context_pack.py relative to this file's location
+        build_script = Path(__file__).resolve().parent.parent / "context_pack.py"
         proc = subprocess.run(
             [
                 str(self.config.vendor_python),
@@ -165,7 +166,8 @@ class Supervisor:
             ("disambiguation_result.json", "disambiguation"),
             ("extraction_result.json", "extraction"),
         ]:
-            path = self.tmp_dir / name
+            # Per-chapter isolation: avoid overwriting previous chapter artifacts
+            path = self.tmp_dir / f"chapter_{chapter:03d}_{name}"
             data = artifacts.get(key, {})
             # For review, flatten to the expected schema
             if key == "review":
@@ -182,8 +184,19 @@ class Supervisor:
 
     def _save_chapter_file(self, chapter_file: str, body: str) -> Path:
         """Save chapter markdown to 正文/."""
+        if not chapter_file or not chapter_file.strip():
+            raise ValueError("chapter_file is empty or missing, cannot save chapter")
         target = self.root / chapter_file
+        # Defensive: prevent path traversal
+        try:
+            target.resolve().relative_to(self.root.resolve())
+        except ValueError:
+            raise ValueError(f"chapter_file '{chapter_file}' attempts path traversal outside project root")
         target.parent.mkdir(parents=True, exist_ok=True)
+        # Backup existing file before overwriting
+        if target.exists():
+            backup = target.with_suffix(target.suffix + ".bak")
+            backup.write_text(target.read_text(encoding="utf-8"), encoding="utf-8")
         target.write_text(body + "\n", encoding="utf-8")
         return target
 
@@ -240,8 +253,16 @@ class Supervisor:
             # Step 0: Ensure contracts exist
             from .contract_builder import ContractBuilder
             builder = ContractBuilder(self.root)
-            builder.ensure_contracts(chapter)
-            log_event("contracts", "ok")
+            try:
+                builder.ensure_contracts(chapter)
+                log_event("contracts", "ok")
+            except Exception as contract_err:
+                log_event("contracts", "fail", {"error": str(contract_err)})
+                return self._build_result(
+                    chapter, "retryable", False, events, event_path, result_path,
+                    started, issues=[f"契约生成失败: {contract_err}"], next_action="检查大纲和设定文件",
+                    error_category="config",
+                )
             if (timeout_result := check_timeout("contracts")):
                 return timeout_result
 

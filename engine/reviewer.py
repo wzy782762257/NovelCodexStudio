@@ -127,7 +127,7 @@ CEN：{directive.get('cen', '')}
         ai_traces = result.get("ai_traces", []) or []
 
         # Check length
-        chinese_chars = len(re.findall(r"[\u3400-\u9fff]", body))
+        chinese_chars = len(re.findall(r"[\u4e00-\u9fff]", body))
         if not 2000 <= chinese_chars <= 3000:
             hard_pass = False
             blocking_issues.append(f"字数 {chinese_chars} 不在 2000-3000 范围内")
@@ -321,11 +321,20 @@ CEN：{directive.get('cen', '')}
         return result
 
     def full_review(self, packet_path: Path, body: str) -> dict[str, Any]:
-        """Run all review steps and return combined artifacts."""
-        review = self.review(packet_path, body)
-        fulfillment = self.fulfillment(packet_path, body)
-        disambiguation = self.disambiguation(packet_path, body)
-        extraction = self.extraction(packet_path, body)
+        """Run all review steps and return combined artifacts.
+        
+        Each step is wrapped in try/except so a single failure doesn't crash the whole review.
+        """
+        def safe_step(name, fn):
+            try:
+                return fn()
+            except Exception as e:
+                return {"error": str(e), "step": name, "ok": False}
+
+        review = safe_step("review", lambda: self.review(packet_path, body))
+        fulfillment = safe_step("fulfillment", lambda: self.fulfillment(packet_path, body))
+        disambiguation = safe_step("disambiguation", lambda: self.disambiguation(packet_path, body))
+        extraction = safe_step("extraction", lambda: self.extraction(packet_path, body))
 
         return {
             "review": review,

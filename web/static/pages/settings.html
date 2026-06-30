@@ -136,6 +136,20 @@
   <script>
     const { api, showToast } = window.NCS;
 
+    async function init() {
+      try {
+        const settings = await api('GET', '/settings');
+        if (settings.model) document.getElementById('model-name').value = settings.model;
+        if (settings.max_tokens) document.getElementById('max-tokens').value = settings.max_tokens;
+        if (settings.batch_size) document.getElementById('batch-size').value = settings.batch_size;
+        if (settings.quality_threshold) document.getElementById('quality-threshold').value = settings.quality_threshold;
+        // mode is not in settings, but could be in engine.mode
+        if (settings.mode) document.getElementById('default-mode').value = settings.mode;
+      } catch (e) {
+        console.error('Failed to load settings:', e);
+      }
+    }
+
     document.querySelectorAll('.settings-nav-item').forEach(item => {
       item.addEventListener('click', () => {
         document.querySelectorAll('.settings-nav-item').forEach(i => i.classList.remove('active'));
@@ -153,6 +167,7 @@
         max_tokens: parseInt(document.getElementById('max-tokens').value),
         batch_size: parseInt(document.getElementById('batch-size').value),
         quality_threshold: parseInt(document.getElementById('quality-threshold').value),
+        mode: document.getElementById('default-mode').value,
       };
       if (apiKeyInput && apiKeyInput.value.trim().length > 10) {
         settings.api_key = apiKeyInput.value.trim();
@@ -164,6 +179,8 @@
         showToast('保存失败', 'error');
       }
     }
+
+    init();
   </script>
 </body>
 </html>

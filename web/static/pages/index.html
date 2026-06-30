@@ -110,32 +110,19 @@
       
       showToast('正在生成选题方案...', 'info');
       
-      // 模拟生成（实际应调用后端API）
-      const suggestions = [
-        {
-          title: "零点回声",
-          desc: "都市异能悬疑。主角是急救调度员，在凌晨接到死去妹妹的求救电话，逐渐发现城市存在一个'静默计划'——用声音操控记忆的阴谋。",
-          genre: "都市异能",
-          tone: "悬疑冷峻",
-          words: "80-100万字"
-        },
-        {
-          title: "电话那头的她",
-          desc: "软科幻+情感。主角通过一部旧电话与三年前的妹妹对话，每次通话都会改变现在，但改变的方向越来越不可控。",
-          genre: "软科幻",
-          tone: "温情悬疑",
-          words: "60-80万字"
-        },
-        {
-          title: "调度员的午夜档案",
-          desc: "单元剧+主线。每章是一个求救电话，背后都是超自然事件，主线是主角逐渐发现自己也在某个'实验'中。",
-          genre: "都市怪谈",
-          tone: "单元悬疑",
-          words: "100万字+"
+      try {
+        const res = await api('POST', '/topics/generate', { input });
+        if (res.ok) {
+          renderSuggestions(res.suggestions);
+          if (res.source === 'preset') {
+            showToast('已生成示例选题（AI 个性化生成即将上线）', 'info');
+          }
+        } else {
+          showToast(res.error || '生成失败', 'error');
         }
-      ];
-      
-      renderSuggestions(suggestions);
+      } catch (e) {
+        showToast('生成失败: ' + (e.message || ''), 'error');
+      }
     });
 
     function renderSuggestions(items) {

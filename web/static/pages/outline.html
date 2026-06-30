@@ -92,30 +92,38 @@
   <script>
     const { api, showToast } = window.NCS;
 
-    const chapterOutlines = [
-      { num: 1, title: '妹妹死后三年，我接到了她的求救电话', desc: 'OPN: 陈默接到异常电话。CBN: 建立悬念。Plot Point A: 陈曦已死三年。CEN: 陈默决定追查。CEQ: 电话那头是谁？' },
-      { num: 2, title: '无法回拨', desc: 'OPN: 尝试回拨失败。CBN: 电话来源成谜。Plot Point A: 发现旧儿童手表。CEN: 手表背面有刻痕。CEQ: 刻痕是什么意思？' },
-      { num: 3, title: '停机三年', desc: 'OPN: 查询号码状态。CBN: 号码已停机。Plot Point A: 苏岚出现，提供线索。CEN: 陈默与苏岚达成合作。CEQ: 静默计划是什么？' },
-      { num: 4, title: '旧表背面', desc: 'OPN: 检查手表。CBN: 发现刻痕是妹妹名字。Plot Point A: 手表与妹妹有关。CEN: 陈默保留手表。CEQ: 为什么有妹妹的名字？' },
-      { num: 5, title: '第5章', desc: '' },
-      { num: 6, title: '第6章', desc: '' },
-      { num: 7, title: '第7章', desc: '' },
-      { num: 8, title: '第8章', desc: '' },
-      { num: 9, title: '第9章', desc: '' },
-      { num: 10, title: '第10章', desc: '' },
-    ];
+    const chapterOutlines = [];
 
-    function renderOutline() {
+    async function init() {
+      try {
+        const data = await api('GET', '/phase/outline');
+        const chapters = data.chapters || [];
+        if (chapters.length > 0) {
+          renderOutline(chapters);
+        } else {
+          // Fallback: empty 10-chapter outline
+          const empty = [];
+          for (let i = 1; i <= 10; i++) empty.push({ num: i, title: `第${i}章`, desc: '' });
+          renderOutline(empty);
+        }
+      } catch (e) {
+        const empty = [];
+        for (let i = 1; i <= 10; i++) empty.push({ num: i, title: `第${i}章`, desc: '' });
+        renderOutline(empty);
+      }
+    }
+
+    function renderOutline(chapters) {
       const container = document.getElementById('chapter-outline');
       container.innerHTML = '';
-      chapterOutlines.forEach(ch => {
+      chapters.forEach(ch => {
         const div = document.createElement('div');
         div.className = 'chapter-outline-item';
         div.innerHTML = `
           <div class="num">${String(ch.num).padStart(2,'0')}</div>
           <div class="content">
-            <input value="${ch.title}" placeholder="章节标题">
-            <textarea placeholder="章节契约、节点、描述...">${ch.desc}</textarea>
+            <input value="${ch.title || ''}" placeholder="章节标题">
+            <textarea placeholder="章节契约、节点、描述...">${ch.desc || ''}</textarea>
           </div>
         `;
         container.appendChild(div);
@@ -132,7 +140,7 @@
         });
       });
       try {
-        await api('POST', '/api/phase/outline', { data: { chapters: items } });
+        await api('POST', '/phase/outline', { data: { chapters: items } });
         showToast('已保存', 'success');
       } catch (e) {
         showToast('保存失败', 'error');
@@ -142,7 +150,7 @@
     async function completeOutline() {
       await saveOutline();
       try {
-        await api('POST', '/api/phase/outline/complete');
+        await api('POST', '/phase/outline/complete');
         showToast('大纲完成，进入正文生产', 'success');
         setTimeout(() => window.location.href = '/dashboard.html', 1000);
       } catch (e) {
@@ -150,7 +158,7 @@
       }
     }
 
-    renderOutline();
+    init();
   </script>
 </body>
 </html>

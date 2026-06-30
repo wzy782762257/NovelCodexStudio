@@ -89,7 +89,10 @@ class LLMClient:
         temperature: float | None = None,
         max_tokens: int | None = None,
     ) -> dict[str, Any]:
-        """Call with JSON response format and parse result."""
+        """Call with JSON response format and parse result.
+        
+        If JSON parsing fails, returns a dict with error info instead of crashing.
+        """
         content = self.chat(
             messages,
             temperature=temperature,
@@ -105,7 +108,20 @@ class LLMClient:
         if text.endswith("```"):
             text = text[:-3]
         text = text.strip()
-        return json.loads(text)
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError as e:
+            # Return a safe fallback with the raw text for debugging
+            return {
+                "_parse_error": str(e),
+                "_raw_text": text[:500],
+                "scores": {},
+                "hard_pass": False,
+                "blocking_issues": [f"LLM 返回 JSON 解析失败: {e}"],
+                "issues": [],
+                "ai_traces": [],
+                "summary": "",
+            }
 
 
 if __name__ == "__main__":

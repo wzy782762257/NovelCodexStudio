@@ -123,18 +123,9 @@
               </div>
 
               <div id="tab-contract" style="display:none;">
-                <div class="contract-panel">
+                <div class="contract-panel" id="contract-panel">
                   <strong>章节契约</strong>
-                  <ul>
-                    <li>OPN: 陈默接到异常电话，发现旧儿童手表</li>
-                    <li>CBN: 建立本章核心悬念</li>
-                    <li>Plot Point A: 手表背面有妹妹名字的刻痕</li>
-                    <li>Emotion Bead: 冷静下的恐惧</li>
-                    <li>Scene: 急救中心值班室</li>
-                    <li>Character: 陈默、苏岚（电话提及）</li>
-                    <li>CEN: 陈默决定保留手表</li>
-                    <li>CEQ: 手表为什么有妹妹的名字？</li>
-                  </ul>
+                  <p style="color:var(--text-tertiary);padding:8px 0;">加载中...</p>
                 </div>
               </div>
 
@@ -187,11 +178,41 @@
         renderReviewPanel(data);
         // Render trace panel
         renderTracePanel(data.trace || []);
+        // Render contract panel
+        renderContractPanel(data.contract || {});
       } catch (e) {
         currentContent = '';
         renderContent(currentContent);
         qs('#chapter-subtitle').textContent = `第${n}章`;
       }
+    }
+
+    function renderContractPanel(contract) {
+      const panel = qs('#contract-panel');
+      if (!contract || Object.keys(contract).length === 0) {
+        panel.innerHTML = '<strong>章节契约</strong><p style="color:var(--text-tertiary);padding:8px 0;">暂无契约数据，引擎运行后会自动提取。</p>';
+        return;
+      }
+      let html = '<strong>章节契约</strong><ul>';
+      const labels = {
+        opn: 'OPN (开篇)', cbn: 'CBN (节点)', plot_points: 'Plot Points',
+        emotion_beads: 'Emotion Beads', scenes: 'Scene', characters: 'Character',
+        cen: 'CEN (结尾)', ceq: 'CEQ (结尾问题)'
+      };
+      for (const [key, label] of Object.entries(labels)) {
+        const val = contract[key];
+        if (val) {
+          if (Array.isArray(val)) {
+            val.forEach(v => {
+              html += `<li>${label}: ${v}</li>`;
+            });
+          } else {
+            html += `<li>${label}: ${val}</li>`;
+          }
+        }
+      }
+      html += '</ul>';
+      panel.innerHTML = html;
     }
 
     function renderReviewPanel(data) {
@@ -279,6 +300,17 @@
 
     // Auto-count on edit
     document.addEventListener('input', updateWordCount);
+
+    async function saveContent() {
+      const paragraphs = Array.from(qsa('.paragraph-text')).map(p => p.textContent);
+      const content = paragraphs.join('\n');
+      try {
+        await api('PUT', `/chapters/${chapterNum}/content`, { content });
+        showToast('已保存', 'success');
+      } catch (e) {
+        showToast('保存失败: ' + (e.message || ''), 'error');
+      }
+    }
 
     async function generateChapter() {
       const btn = qs('#btn-generate');
