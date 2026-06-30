@@ -261,7 +261,7 @@
 
         <!-- Chapter Progress + Issues + Logs -->
         <div class="dashboard-grid">
-          <div class="dashboard-card wide">
+          <div class="dashboard-card full">
             <div class="card-header">
               <div>
                 <div class="card-title">章节进度</div>
@@ -274,12 +274,24 @@
           <div class="dashboard-card">
             <div class="card-header">
               <div>
+                <div class="card-title">最近通知</div>
+                <div class="card-subtitle">引擎事件与异常提醒</div>
+              </div>
+            </div>
+            <div class="issue-list-compact" id="notification-panel">
+              <div style="color: var(--text-tertiary); font-size: 13px; padding: 12px;">暂无通知</div>
+            </div>
+          </div>
+
+          <div class="dashboard-card">
+            <div class="card-header">
+              <div>
                 <div class="card-title">最近问题</div>
                 <div class="card-subtitle"><a href="/issues.html" style="color: var(--blue); text-decoration: none;">查看全部 →</a></div>
               </div>
             </div>
             <div class="issue-list-compact" id="issue-list-compact">
-              <div style="color: var(--text-tertiary); font-size: 13px; padding: 12px;">加载中...</div>
+              <div style="color: var(--text-tertiary); font-size: 13px; padding: 12px;">暂无待处理问题</div>
             </div>
           </div>
 
@@ -304,6 +316,9 @@
   <script>
     const { api, appState, showToast, qs, qsa, on } = window.NCS;
 
+    let eventSource = null;
+    let notificationCount = 0;
+
     // Initialize
     async function init() {
       const chapters = await loadChapters();
@@ -312,12 +327,61 @@
       await loadProjectState();
       await loadEngineStatus();
       await loadIssues();
+      await loadNotifications();
+      startSSE();
       startLogPolling();
+    }
+
+    function startSSE() {
+      if (eventSource) eventSource.close();
+      eventSource = new EventSource('/api/events/stream');
+      eventSource.onmessage = (e) => {
+        try {
+          const data = JSON.parse(e.data);
+          if (data.type === 'notification') {
+            loadNotifications();
+          } else {
+            updateEngineUI(data);
+          }
+        } catch (err) {}
+      };
+      eventSource.onerror = () => {
+        setTimeout(startSSE, 5000);
+      };
+    }
+
+    async function loadNotifications() {
+      try {
+        const data = await api('GET', '/api/notifications?unread=true');
+        const notifs = data.notifications || [];
+        notificationCount = notifs.length;
+        renderNotifications(notifs);
+      } catch (e) {}
+    }
+
+    function renderNotifications(notifs) {
+      const container = qs('#notification-panel');
+      if (!container) return;
+      if (!notifs || notifs.length === 0) {
+        container.innerHTML = '<div style="color: var(--text-tertiary); font-size: 13px; padding: 12px;">暂无通知</div>';
+        return;
+      }
+      container.innerHTML = '';
+      notifs.forEach(n => {
+        const div = document.createElement('div');
+        div.className = 'issue-item-compact ' + (n.level === 'error' ? 'danger' : n.level === 'warning' ? 'warning' : '');
+        div.innerHTML = `
+          <span class="issue-icon">${n.level === 'error' ? '🔴' : n.level === 'warning' ? '⚠' : 'ℹ'}</span>
+          <span class="issue-text">${n.title}</span>
+          <span class="issue-chapter">Ch.${n.chapter || '-'}</span>
+        `;
+        container.appendChild(div);
+      });
     }
 
     async function loadChapters() {
       try {
-        return await api('GET', '/chapters');
+        return await api('GET', '/api/chapters');
       } catch (e) {
         return [];
       }
@@ -325,7 +389,7 @@
 
     async function loadProjectState() {
       try {
-        const project = await api('GET', '/project');
+        const project = await api('GET', '/api/project');
         updatePhaseBar(project.phase);
         qs('#current-phase').textContent = phaseName(project.phase);
       } catch (e) {}
@@ -333,14 +397,14 @@
 
     async function loadEngineStatus() {
       try {
-        const status = await api('GET', '/engine/status');
+        const status = await api('GET', '/api/engine/status');
         updateEngineUI(status);
       } catch (e) {}
     }
 
     async function loadIssues() {
       try {
-        const issues = await api('GET', '/issues');
+        const issues = await api('GET', '/api/issues');
         qs('#pending-issues').textContent = issues.pending?.length || 0;
         renderIssueCompact(issues.pending?.slice(0, 3) || []);
       } catch (e) {}
@@ -360,7 +424,6 @@
       text.textContent = status.status === 'running' ? '运行中' : status.status === 'paused' ? '已暂停' : '待机';
       mode.textContent = `模式：${status.mode === 'auto' ? '全自动' : status.mode === 'pause' ? '暂停' : '手动'}`;
 
-      // Show/hide buttons based on state
       btnStart.style.display = status.status === 'idle' ? 'inline-flex' : 'none';
       btnPause.style.display = status.status === 'running' ? 'inline-flex' : 'none';
       btnResume.style.display = status.status === 'paused' ? 'inline-flex' : 'none';
@@ -371,7 +434,6 @@
       const container = qs('#chapter-progress');
       container.innerHTML = '';
       const total = 10;
-      // Build a map of chapter status
       const statusMap = {};
       (chapters || []).forEach(ch => {
         statusMap[ch.number] = ch.status;
@@ -404,17 +466,8 @@
       fill.style.width = `${percent}%`;
       fill.parentElement.previousElementSibling.querySelector('span:last-child').textContent = `${percent}%`;
       
-      // Update current chapter text
       const nextChapter = chapters.find(c => c.status !== 'committed') || { number: total + 1 };
       qs('#engine-current-chapter').textContent = `当前章节：第 ${Math.min(nextChapter.number, total)} 章`;
-    }
-
-    async function loadChapters() {
-      try {
-        return await api('GET', '/chapters');
-      } catch (e) {
-        return [];
-      }
     }
 
     function renderIssueCompact(issues) {
@@ -463,48 +516,47 @@
         qsa('.mode-option').forEach(o => o.classList.remove('active'));
         opt.classList.add('active');
         const mode = opt.dataset.mode;
-        api('POST', '/settings', { mode });
+        api('POST', '/api/settings', { mode });
         showToast(`已切换为${mode === 'auto' ? '全自动' : mode === 'pause' ? '暂停' : '手动'}模式`);
       });
     });
 
-    // Engine controls - auto-detect next chapter
+    // Engine controls
     on(qs('#btn-start'), 'click', async () => {
       const chapters = await loadChapters();
       const mode = qs('.mode-option.active')?.dataset.mode || 'auto';
-      // Find first non-committed chapter
       const next = chapters.find(c => c.status !== 'committed') || { number: 1 };
       const chapter = next.number;
-      api('POST', '/engine/start', { chapter, mode }).then(r => {
+      api('POST', '/api/engine/start', { chapter, mode }).then(r => {
         if (r.ok) showToast(`引擎已启动 - 第 ${chapter} 章`, 'success');
         else showToast(r.error, 'error');
       });
     });
 
     on(qs('#btn-pause'), 'click', () => {
-      api('POST', '/engine/pause').then(() => showToast('引擎已暂停', 'info'));
+      api('POST', '/api/engine/pause').then(() => showToast('引擎已暂停', 'info'));
     });
 
     on(qs('#btn-resume'), 'click', () => {
-      api('POST', '/engine/resume').then(() => showToast('引擎已继续', 'success'));
+      api('POST', '/api/engine/resume').then(() => showToast('引擎已继续', 'success'));
     });
 
     on(qs('#btn-stop'), 'click', () => {
-      api('POST', '/engine/stop').then(() => showToast('引擎已停止', 'info'));
+      api('POST', '/api/engine/stop').then(() => showToast('引擎已停止', 'info'));
     });
 
     // Log polling
     function startLogPolling() {
       setInterval(async () => {
         try {
-          const logs = await api('GET', '/logs');
+          const logs = await api('GET', '/api/logs');
           const preview = qs('#log-preview');
           if (logs.length > 0 && logs[0].lines.length > 0) {
             preview.innerHTML = logs[0].lines.map(l => `<div>${escapeHtml(l)}</div>`).join('');
             preview.scrollTop = preview.scrollHeight;
           }
         } catch (e) {}
-      }, 3000);
+      }, 5000);
     }
 
     function escapeHtml(text) {

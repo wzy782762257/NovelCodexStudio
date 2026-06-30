@@ -97,6 +97,7 @@
 
         <div class="action-bar">
           <button class="btn btn-ghost" onclick="saveFoundation()">💾 保存</button>
+          <button class="btn btn-secondary" onclick="generateFoundation()">✨ AI 生成</button>
           <button class="btn btn-primary" onclick="completeFoundation()">✓ 完成框架设计，进入大纲</button>
         </div>
       </div>
@@ -112,10 +113,30 @@
         const data = await api('GET', '/api/phase/foundation');
         if (data.data?.world) qs('#world-setting').value = data.data.world;
         if (data.data?.plot) qs('#plot-arc').value = data.data.plot;
+        if (data.data?.characters) renderCharacters(data.data.characters);
       } catch (e) {}
     }
 
     function qs(sel) { return document.querySelector(sel); }
+
+    function renderCharacters(characters) {
+      const list = qs('#character-list');
+      list.innerHTML = '';
+      characters.forEach(ch => {
+        const roleClass = ch.role === '主角' || ch.role === 'protagonist' ? 'protagonist' : 'supporting';
+        const initials = ch.name ? ch.name.charAt(0) : '?';
+        const div = document.createElement('div');
+        div.className = 'character-item';
+        div.innerHTML = `
+          <div class="character-avatar ${roleClass}">${initials}</div>
+          <div class="character-info">
+            <strong>${ch.name}</strong>
+            <span>${ch.role} · ${ch.traits || ch.arc || '角色设定'}</span>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+    }
 
     async function saveFoundation() {
       const world = qs('#world-setting').value;
@@ -125,6 +146,33 @@
         showToast('已保存', 'success');
       } catch (e) {
         showToast('保存失败', 'error');
+      }
+    }
+
+    async function generateFoundation() {
+      showToast('AI 正在生成框架设计...', 'info');
+      try {
+        // Get selected topic from project state
+        const project = await api('GET', '/api/project');
+        const topicData = project.progress?.topic?.data || {};
+        const topic = topicData.selected || {};
+        
+        const resp = await api('POST', '/api/foundation/generate', { topic });
+        if (!resp.ok) {
+          showToast(resp.error || '生成失败', 'error');
+          return;
+        }
+        
+        const data = resp.foundation || {};
+        if (data.world) qs('#world-setting').value = data.world;
+        if (data.plot) qs('#plot-arc').value = data.plot;
+        if (data.characters) renderCharacters(data.characters);
+        
+        // Save to state
+        await api('POST', '/api/phase/foundation', { data });
+        showToast('AI 生成完成并已保存', 'success');
+      } catch (e) {
+        showToast('AI 生成失败: ' + e.message, 'error');
       }
     }
 
