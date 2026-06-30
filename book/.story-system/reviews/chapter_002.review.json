@@ -14,5 +14,14 @@
     "不得让周启明知道回声",
     "不得让陈默拿走原始系统权限",
     "不得把失物认领人身份直接揭开。"
-  ]
+  ],
+  "scores": {
+    "plot_progress": 90,
+    "character_consistency": 85,
+    "continuity": 88,
+    "pacing": 92,
+    "chapter_hook": 95,
+    "style_naturalness": 90
+  },
+  "hard_pass": true
 }

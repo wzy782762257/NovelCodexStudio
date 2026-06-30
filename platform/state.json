@@ -1,0 +1,93 @@
+{
+  "project_id": "ncs-default",
+  "project_name": "未命名项目",
+  "phase": "topic",
+  "phases_completed": [],
+  "engine": {
+    "status": "idle",
+    "mode": "auto",
+    "current_chapter": 4,
+    "target_chapters": 10,
+    "start_time": 1782781374.376745,
+    "elapsed": 0
+  },
+  "progress": {
+    "production": {
+      "chapters": [
+        {
+          "chapter": 1,
+          "title": "妹妹死后三年，我接到了她的求救电话",
+          "status": "committed",
+          "word_count": 2019,
+          "committed": true,
+          "scores": {},
+          "hard_pass": false,
+          "ai_traces": [],
+          "steps": [
+            {
+              "step": "commit",
+              "status": "ok",
+              "at": null,
+              "data": {}
+            }
+          ],
+          "last_step": "commit",
+          "last_status": "ok"
+        },
+        {
+          "chapter": 2,
+          "title": "无法回拨",
+          "status": "committed",
+          "word_count": 2002,
+          "committed": true,
+          "scores": {},
+          "hard_pass": false,
+          "ai_traces": [],
+          "steps": [
+            {
+              "step": "commit",
+              "status": "ok",
+              "at": null,
+              "data": {}
+            }
+          ],
+          "last_step": "commit",
+          "last_status": "ok"
+        },
+        {
+          "chapter": 3,
+          "title": "停机三年",
+          "status": "committed",
+          "word_count": 2458,
+          "committed": true,
+          "scores": {},
+          "hard_pass": false,
+          "ai_traces": [],
+          "steps": [
+            {
+              "step": "commit",
+              "status": "ok",
+              "at": null,
+              "data": {}
+            }
+          ],
+          "last_step": "commit",
+          "last_status": "ok"
+        }
+      ]
+    }
+  },
+  "issues": {
+    "pending": [],
+    "resolved": [],
+    "total": 0
+  },
+  "settings": {
+    "model": "deepseek-ai/DeepSeek-V3",
+    "max_tokens": 6000,
+    "batch_size": 1,
+    "quality_threshold": 70
+  },
+  "created_at": null,
+  "updated_at": 1782781374.392127
+}

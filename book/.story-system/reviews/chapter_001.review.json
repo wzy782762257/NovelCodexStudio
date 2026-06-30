@@ -47,5 +47,14 @@
     "locked": {},
     "append_only": {},
     "override_allowed": {}
-  }
+  },
+  "scores": {
+    "plot_progress": 85,
+    "character_consistency": 85,
+    "continuity": 85,
+    "pacing": 82,
+    "chapter_hook": 86,
+    "style_naturalness": 84
+  },
+  "hard_pass": true
 }

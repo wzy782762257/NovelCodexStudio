@@ -73,6 +73,8 @@ class PlatformState:
     def __init__(self):
         self._data = self._load()
         self._lock = threading.Lock()
+        # Sync progress chapters from disk on load
+        self._sync_chapters_from_disk()
     
     def _load(self) -> dict:
         if PLATFORM_STATE.exists():
@@ -155,6 +157,61 @@ class PlatformState:
                     self._data["issues"]["pending"].pop(i)
                     break
         self.save()
+
+    def _sync_chapters_from_disk(self):
+        """扫描磁盘正文文件，自动导入/更新平台状态"""
+        import re
+        chapters = self._data.setdefault("progress", {}).setdefault("production", {}).setdefault("chapters", [])
+        existing_map = {c.get("chapter"): c for c in chapters}
+        text_dir = BOOK_ROOT / "正文"
+        review_dir = BOOK_ROOT / ".story-system" / "reviews"
+        for f in sorted(text_dir.glob("第*.md")):
+            m = re.search(r"第0*(\d+)章", f.name)
+            if not m:
+                continue
+            num = int(m.group(1))
+            content = f.read_text(encoding="utf-8")
+            title = ""
+            for line in content.split("\n")[:5]:
+                m2 = re.search(r"第\d+章\s*(.+)", line)
+                if m2:
+                    title = m2.group(1).strip()
+                    break
+            if not title:
+                title = f.name.replace(".md", "").split("-")[-1] if "-" in f.name else f"第{num}章"
+            wc = len(re.findall(r"[\u4e00-\u9fff]", content))
+            review_file = review_dir / f"chapter_{num:03d}.review.json"
+            scores, hard_pass, ai_traces = {}, False, []
+            if review_file.exists():
+                try:
+                    rev = json.loads(review_file.read_text(encoding="utf-8"))
+                    scores = rev.get("scores", {})
+                    hard_pass = rev.get("hard_pass", False)
+                    ai_traces = rev.get("ai_traces", [])
+                except Exception:
+                    pass
+            if num in existing_map:
+                # Update existing chapter entry
+                entry = existing_map[num]
+                entry["title"] = title
+                entry["word_count"] = wc
+                entry["scores"] = scores
+                entry["hard_pass"] = hard_pass
+                entry["ai_traces"] = ai_traces
+            else:
+                chapters.append({
+                    "chapter": num,
+                    "title": title,
+                    "status": "committed",
+                    "word_count": wc,
+                    "committed": True,
+                    "scores": scores,
+                    "hard_pass": hard_pass,
+                    "ai_traces": ai_traces,
+                    "steps": [{"step": "commit", "status": "ok", "at": None, "data": {}}],
+                    "last_step": "commit",
+                    "last_status": "ok",
+                })
 
 
 state = PlatformState()
@@ -671,6 +728,8 @@ def api_export_download():
             "Content-Disposition": 'attachment; filename="零点回声.md"',
         },
     )
+
+@app.route("/api/logs")
 def api_logs():
     """获取最近的日志"""
     logs = []
