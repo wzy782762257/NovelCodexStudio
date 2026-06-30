@@ -760,9 +760,20 @@ def api_chapter_approve(n):
 
 @app.route("/api/chapters/<int:n>/reject", methods=["POST"])
 def api_chapter_reject(n):
-    """退回章节为需要修复状态"""
+    """退回章节为需要修复状态，并自动触发重新生成"""
     ok = state.reject_chapter(n)
-    return jsonify({"ok": ok, "chapter": n, "status": "needs_fix"})
+    # Auto-retry: start engine for this chapter after a brief delay
+    def delayed_retry():
+        time.sleep(2)
+        # Only retry if engine is idle and chapter still needs fix
+        if state.get("engine.status") == "idle":
+            chapters = state.get("progress.production.chapters") or []
+            ch = next((c for c in chapters if c.get("chapter") == n), None)
+            if ch and ch.get("status") == "needs_fix":
+                engine.start(n, mode="manual")
+                notifications.add("info", f"第{n}章重新生成中", "已自动触发重试", n)
+    threading.Thread(target=delayed_retry, daemon=True).start()
+    return jsonify({"ok": ok, "chapter": n, "status": "needs_fix", "retry": True})
 
 
 @app.route("/api/topics/generate", methods=["POST"])
@@ -792,85 +803,53 @@ def api_topics_generate():
 ]
 不要添加任何解释或markdown代码块。"""
     
+    # Fix: call 3 times separately to reliably get 3 distinct topics
     try:
-        resp = client.chat_json([
-            {"role": "system", "content": "你是一个网络小说选题策划专家。只返回 JSON 格式数据。"},
-            {"role": "user", "content": prompt}
-        ], temperature=0.8, max_tokens=2000)
-        
-        if isinstance(resp, list):
-            suggestions = resp
-        elif isinstance(resp, dict):
-            # LLM may return a single dict (one suggestion) instead of array
-            if resp.get("title") and resp.get("desc"):
-                suggestions = [resp]
-            else:
-                suggestions = resp.get("suggestions") or resp.get("topics") or resp.get("data") or []
-            if not isinstance(suggestions, list):
-                suggestions = [suggestions]
-        else:
-            suggestions = []
-        
-        # Validate and normalize each suggestion
         valid = []
-        for s in suggestions:
-            if isinstance(s, dict) and s.get("title") and s.get("desc"):
-                valid.append({
-                    "title": s.get("title", ""),
-                    "desc": s.get("desc", ""),
-                    "genre": s.get("genre", "都市"),
-                    "tone": s.get("tone", "悬疑"),
-                    "words": s.get("words", "80-100万字"),
-                })
-        
-        # Fallback: if AI returns fewer than 3, generate the rest via a second call
-        if len(valid) < 3:
-            fallback_prompt = f"""用户想写小说，关键词：{user_input if user_input else "都市悬疑"}
-
-之前已生成的选题：{json.dumps([v["title"] for v in valid], ensure_ascii=False)}
-
-请再补充生成 {3 - len(valid)} 个完全不同的选题，返回 JSON 数组格式：
-[{{"title": "...", "desc": "...", "genre": "...", "tone": "...", "words": "..."}}, ...]
-避免与已有选题重复。"""
-            try:
-                resp2 = client.chat_json([
-                    {"role": "system", "content": "网络小说选题策划专家。只返回 JSON 数组。"},
-                    {"role": "user", "content": fallback_prompt}
-                ], temperature=0.9, max_tokens=2000)
-                if isinstance(resp2, list):
-                    extra = resp2
-                elif isinstance(resp2, dict):
-                    if resp2.get("title") and resp2.get("desc"):
-                        extra = [resp2]
-                    else:
-                        extra = resp2.get("suggestions") or resp2.get("topics") or resp2.get("data") or []
-                else:
-                    extra = []
-                for s in extra:
-                    if isinstance(s, dict) and s.get("title") and s.get("desc"):
-                        valid.append({
-                            "title": s.get("title", ""),
-                            "desc": s.get("desc", ""),
-                            "genre": s.get("genre", "都市"),
-                            "tone": s.get("tone", "悬疑"),
-                            "words": s.get("words", "80-100万字"),
-                        })
-            except Exception:
-                pass
-        
-        # Hard fallback if still less than 3
-        hard_fallbacks = [
-            {"title": "零点回声", "desc": "都市异能悬疑。主角是急救调度员，在凌晨接到死去妹妹的求救电话，逐渐发现城市存在一个'静默计划'——用声音操控记忆的阴谋。", "genre": "都市异能", "tone": "悬疑冷峻", "words": "80-100万字"},
-            {"title": "电话那头的她", "desc": "软科幻+情感。主角通过一部旧电话与三年前的妹妹对话，每次通话都会改变现在，但改变的方向越来越不可控。", "genre": "软科幻", "tone": "温情悬疑", "words": "60-80万字"},
-            {"title": "调度员的午夜档案", "desc": "单元剧+主线。每章是一个求救电话，背后都是超自然事件，主线是主角逐渐发现自己也在某个'实验'中。", "genre": "都市怪谈", "tone": "单元悬疑", "words": "100万字+"},
+        themes = [
+            user_input if user_input else "都市悬疑+异能",
+            (user_input if user_input else "都市悬疑") + "，换一个完全不同的角度",
+            (user_input if user_input else "都市悬疑") + "，第三种创新视角",
         ]
-        while len(valid) < 3:
-            for fb in hard_fallbacks:
-                if fb["title"] not in [v["title"] for v in valid]:
-                    valid.append(fb)
-                    break
-            if len(valid) >= 3:
-                break
+        for i, theme in enumerate(themes):
+            single_prompt = f"""你是一位资深网络小说策划。根据以下关键词，生成1个独特的小说选题。
+
+关键词：{theme}
+
+要求：
+1. 书名要有吸引力，避免俗套
+2. 简介100字以内，突出核心冲突和卖点
+3. 与之前的选题完全不同
+
+直接返回单个JSON对象，格式（不要数组，不要markdown）：
+{{"title": "...", "desc": "...", "genre": "...", "tone": "...", "words": "..."}}
+不要任何解释。"""
+            try:
+                resp = client.chat_json([
+                    {"role": "system", "content": "网络小说选题策划专家。只返回单个JSON对象，不要数组。"},
+                    {"role": "user", "content": single_prompt}
+                ], temperature=0.8 + i*0.05, max_tokens=500)
+                
+                if isinstance(resp, dict) and resp.get("title") and resp.get("desc"):
+                    valid.append({
+                        "title": resp.get("title", ""),
+                        "desc": resp.get("desc", ""),
+                        "genre": resp.get("genre", "都市"),
+                        "tone": resp.get("tone", "悬疑"),
+                        "words": resp.get("words", "80-100万字"),
+                    })
+            except Exception as e:
+                print(f"[backend] Topic generation call {i+1} failed: {e}", file=sys.stderr)
+                continue
+        
+        # Hard fallback only if ALL calls failed
+        if len(valid) == 0:
+            hard_fallbacks = [
+                {"title": "零点回声", "desc": "都市异能悬疑。主角是急救调度员，在凌晨接到死去妹妹的求救电话，逐渐发现城市存在一个'静默计划'——用声音操控记忆的阴谋。", "genre": "都市异能", "tone": "悬疑冷峻", "words": "80-100万字"},
+                {"title": "电话那头的她", "desc": "软科幻+情感。主角通过一部旧电话与三年前的妹妹对话，每次通话都会改变现在，但改变的方向越来越不可控。", "genre": "软科幻", "tone": "温情悬疑", "words": "60-80万字"},
+                {"title": "调度员的午夜档案", "desc": "单元剧+主线。每章是一个求救电话，背后都是超自然事件，主线是主角逐渐发现自己也在某个'实验'中。", "genre": "都市怪谈", "tone": "单元悬疑", "words": "100万字+"},
+            ]
+            valid = hard_fallbacks
         
         return jsonify({"ok": True, "suggestions": valid[:3], "source": "ai"})
     
@@ -970,6 +949,205 @@ def api_logs():
         except Exception:
             pass
     return jsonify(logs)
+
+
+# ─── Foundation AI Generation ─────────────────────────────
+@app.route("/api/foundation/generate", methods=["POST"])
+def api_foundation_generate():
+    """根据已选选题，AI 生成世界观、角色、剧情脉络"""
+    data = request.get_json() or {}
+    topic = data.get("topic", {})
+    title = topic.get("title", "")
+    desc = topic.get("desc", "")
+    genre = topic.get("genre", "")
+    tone = topic.get("tone", "")
+    
+    client = _get_llm_client()
+    if not client:
+        return jsonify({"ok": False, "error": "LLM 未配置"})
+    
+    prompt = f"""你是一位资深小说架构师。根据以下选题，生成完整的世界观、角色卡和剧情脉络。
+
+选题：{title}
+简介：{desc}
+类型：{genre}
+基调：{tone}
+
+请返回严格的 JSON 对象，格式如下：
+{{
+  "world": "世界观设定（300字以内）",
+  "characters": [
+    {{"name": "角色名", "role": "主角/反派/配角", "traits": "性格特征", "arc": "人物弧线"}},
+    ...（3-5个角色）
+  ],
+  "plot": "剧情脉络（500字以内，含主线、支线、冲突点、高潮）"
+}}
+不要任何解释，不要 markdown 代码块。"""
+    
+    try:
+        resp = client.chat_json([
+            {"role": "system", "content": "小说架构师。只返回单个 JSON 对象。"},
+            {"role": "user", "content": prompt}
+        ], temperature=0.7, max_tokens=3000)
+        
+        if not isinstance(resp, dict):
+            return jsonify({"ok": False, "error": "LLM 返回格式异常", "raw": str(resp)[:200]})
+        
+        result = {
+            "world": resp.get("world", ""),
+            "characters": resp.get("characters", []),
+            "plot": resp.get("plot", ""),
+        }
+        # Save to state
+        current = state.get("progress.foundation") or {}
+        current["data"] = result
+        state.set("progress.foundation", current)
+        
+        return jsonify({"ok": True, "foundation": result})
+    except Exception as e:
+        return jsonify({"ok": False, "error": f"生成失败: {e}"})
+
+
+# ─── Outline Sync to Engine ───────────────────────────────
+@app.route("/api/outline/sync", methods=["POST"])
+def api_outline_sync():
+    """将大纲同步到引擎可读取的文件"""
+    data = request.get_json() or {}
+    chapters = data.get("chapters", [])
+    
+    outline_dir = BOOK_ROOT / ".story-system"
+    outline_dir.mkdir(parents=True, exist_ok=True)
+    outline_path = outline_dir / "outline.json"
+    outline_path.write_text(
+        json.dumps({"chapters": chapters, "synced_at": time.time()}, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return jsonify({"ok": True, "path": str(outline_path)})
+
+
+# ─── Events & Notifications ─────────────────────────────────
+_event_queue = []
+_event_lock = threading.Lock()
+
+class NotificationManager:
+    """简单通知管理器"""
+    
+    def __init__(self):
+        self._notifications = []
+        self._lock = threading.Lock()
+    
+    def add(self, level: str, title: str, message: str, chapter: int = 0):
+        with self._lock:
+            self._notifications.append({
+                "id": f"notif-{int(time.time()*1000)}",
+                "level": level,  # info, warning, error, success
+                "title": title,
+                "message": message,
+                "chapter": chapter,
+                "created_at": time.time(),
+                "read": False,
+            })
+            # Keep only last 100
+            if len(self._notifications) > 100:
+                self._notifications = self._notifications[-100:]
+    
+    def list(self, unread_only=False):
+        with self._lock:
+            if unread_only:
+                return [n for n in self._notifications if not n["read"]]
+            return self._notifications.copy()
+    
+    def mark_read(self, notif_id: str):
+        with self._lock:
+            for n in self._notifications:
+                if n["id"] == notif_id:
+                    n["read"] = True
+                    return True
+        return False
+
+    def mark_all_read(self):
+        with self._lock:
+            for n in self._notifications:
+                n["read"] = True
+
+notifications = NotificationManager()
+
+@app.route("/api/notifications")
+def api_notifications():
+    """获取通知列表"""
+    unread_only = request.args.get("unread", "false").lower() == "true"
+    return jsonify({"notifications": notifications.list(unread_only)})
+
+@app.route("/api/notifications/<notif_id>/read", methods=["POST"])
+def api_notification_read(notif_id):
+    notifications.mark_read(notif_id)
+    return jsonify({"ok": True})
+
+@app.route("/api/notifications/read-all", methods=["POST"])
+def api_notifications_read_all():
+    notifications.mark_all_read()
+    return jsonify({"ok": True})
+
+# Patch EngineStateMachine to emit notifications
+_original_process_event = EngineStateMachine._process_event
+
+def _patched_process_event(self, event: dict):
+    """增强版事件处理：添加通知"""
+    step = event.get("step")
+    status = event.get("status")
+    chapter = event.get("chapter", 0)
+    data = event.get("data", {})
+    
+    # Call original
+    _original_process_event(self, event)
+    
+    # Add notifications for key events
+    if step == "commit" and status == "ok":
+        notifications.add(
+            "success",
+            f"第{chapter}章已提交",
+            f"字数: {data.get('chinese_chars', 0)}",
+            chapter,
+        )
+    elif step == "error" and status == "exception":
+        notifications.add(
+            "error",
+            f"第{chapter}章运行异常",
+            data.get("error", "未知错误")[:200],
+            chapter,
+        )
+    elif status == "fail" and step in ("prewrite", "precommit", "postcommit"):
+        notifications.add(
+            "warning",
+            f"第{chapter}章 {step} 失败",
+            "需要人工干预",
+            chapter,
+        )
+
+EngineStateMachine._process_event = _patched_process_event
+
+
+# ─── SSE Event Stream (Real-time Updates) ──────────────────
+@app.route("/api/events/stream")
+def api_events_stream():
+    """Server-Sent Events 流，推送引擎状态变更"""
+    from flask import Response
+    
+    def generate():
+        last_status = None
+        while True:
+            current = engine.status()
+            status_json = json.dumps(current, ensure_ascii=False)
+            if status_json != last_status:
+                last_status = status_json
+                yield f"data: {status_json}\n\n"
+            # Also check for new notifications
+            unread = notifications.list(unread_only=True)
+            if unread:
+                yield f"data: {json.dumps({'type': 'notification', 'notifications': unread}, ensure_ascii=False)}\n\n"
+            time.sleep(2)
+    
+    return Response(generate(), mimetype="text/event-stream")
 
 
 # ─── Helpers ──────────────────────────────────────────────
