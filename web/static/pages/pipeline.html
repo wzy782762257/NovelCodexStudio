@@ -144,7 +144,7 @@
             <div class="action-btns">
               ${ch.status === 'pending' ? `<button class="btn btn-primary btn-sm" onclick="generateChapter(${ch.number})">生成</button>` : ''}
               ${ch.status === 'draft' ? `<button class="btn btn-ghost btn-sm" onclick="openChapter(${ch.number})">编辑</button>` : ''}
-              ${ch.status === 'fail' ? `<button class="btn btn-danger btn-sm" onclick="retryChapter(${ch.number})">重试</button>` : ''}
+              ${ch.status === 'fail' || ch.status === 'needs_fix' ? `<button class="btn btn-danger btn-sm" onclick="retryChapter(${ch.number})">重试</button>` : ''}
               ${ch.status === 'committed' ? `<button class="btn btn-ghost btn-sm" onclick="openChapter(${ch.number})">查看</button>` : ''}
             </div>
           </td>
@@ -161,6 +161,7 @@
         writing: ['writing', '⟳ 生成中'],
         review: ['review', '🔍 审查中'],
         fail: ['fail', '✗ 异常'],
+        needs_fix: ['fail', '↺ 需修复'],
       };
       const [cls, text] = map[status] || ['pending', status];
       return `<span class="status-badge ${cls}">${text}</span>`;

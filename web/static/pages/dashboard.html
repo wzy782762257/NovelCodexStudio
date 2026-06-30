@@ -229,8 +229,8 @@
 
           <div class="engine-panel" style="margin-top: 20px;">
             <div class="engine-info">
-              <h3 id="engine-current-chapter">当前章节：第 3 章</h3>
-              <p id="engine-progress-detail">进度：2/10 章已提交，1 章草稿，第 4 章排队中</p>
+              <h3 id="engine-current-chapter">当前章节：加载中...</h3>
+              <p id="engine-progress-detail">进度：加载中...</p>
             </div>
             <div class="engine-controls">
               <button class="btn btn-primary" id="btn-start" style="display: none;">
@@ -279,11 +279,7 @@
               </div>
             </div>
             <div class="issue-list-compact" id="issue-list-compact">
-              <div class="issue-item-compact warning">
-                <span class="issue-icon">⚠</span>
-                <span class="issue-text">第4章遗漏节点 CBN、CEN</span>
-                <span class="issue-chapter">Ch.4</span>
-              </div>
+              <div style="color: var(--text-tertiary); font-size: 13px; padding: 12px;">加载中...</div>
             </div>
           </div>
 
@@ -310,11 +306,21 @@
 
     // Initialize
     async function init() {
+      const chapters = await loadChapters();
+      renderChapterProgress(chapters);
+      updateProgressStats(chapters);
       await loadProjectState();
       await loadEngineStatus();
       await loadIssues();
-      renderChapterProgress();
       startLogPolling();
+    }
+
+    async function loadChapters() {
+      try {
+        return await api('GET', '/chapters');
+      } catch (e) {
+        return [];
+      }
     }
 
     async function loadProjectState() {
@@ -361,36 +367,71 @@
       btnStop.style.display = status.status !== 'idle' ? 'inline-flex' : 'none';
     }
 
-    function renderChapterProgress() {
+    function renderChapterProgress(chapters) {
       const container = qs('#chapter-progress');
       container.innerHTML = '';
-      for (let i = 1; i <= 10; i++) {
+      const total = 10;
+      // Build a map of chapter status
+      const statusMap = {};
+      (chapters || []).forEach(ch => {
+        statusMap[ch.number] = ch.status;
+      });
+      for (let i = 1; i <= total; i++) {
         const dot = document.createElement('div');
         dot.className = 'chapter-dot';
         dot.textContent = i;
-        // 模拟状态
-        if (i <= 2) dot.classList.add('done');
-        else if (i === 3) dot.classList.add('writing');
-        else if (i === 4) dot.classList.add('fail');
+        const status = statusMap[i] || 'pending';
+        if (status === 'committed') dot.classList.add('done');
+        else if (status === 'written' || status === 'reviewed') dot.classList.add('review');
+        else if (status === 'failed' || status === 'needs_fix') dot.classList.add('fail');
+        else if (status === 'writing' || status === 'running') dot.classList.add('writing');
         else dot.classList.add('pending');
         dot.addEventListener('click', () => window.location.href = `/chapter.html?n=${i}`);
         container.appendChild(dot);
       }
     }
 
+    function updateProgressStats(chapters) {
+      const total = 10;
+      const committed = (chapters || []).filter(c => c.status === 'committed').length;
+      const pending = (chapters || []).filter(c => c.status === 'pending' || !c.status).length;
+      const failed = (chapters || []).filter(c => c.status === 'failed' || c.status === 'needs_fix').length;
+      const percent = Math.round((committed / total) * 100);
+      
+      qs('#engine-progress-detail').textContent = `进度：${committed}/${total} 章已提交，${pending} 章排队中，${failed} 章异常`;
+      
+      const fill = qs('.progress-fill-large');
+      fill.style.width = `${percent}%`;
+      fill.parentElement.previousElementSibling.querySelector('span:last-child').textContent = `${percent}%`;
+      
+      // Update current chapter text
+      const nextChapter = chapters.find(c => c.status !== 'committed') || { number: total + 1 };
+      qs('#engine-current-chapter').textContent = `当前章节：第 ${Math.min(nextChapter.number, total)} 章`;
+    }
+
+    async function loadChapters() {
+      try {
+        return await api('GET', '/chapters');
+      } catch (e) {
+        return [];
+      }
+    }
+
     function renderIssueCompact(issues) {
       const container = qs('#issue-list-compact');
-      if (issues.length === 0) {
+      if (!issues || issues.length === 0) {
         container.innerHTML = '<div style="color: var(--text-tertiary); font-size: 13px; padding: 12px;">暂无待处理问题</div>';
         return;
       }
       container.innerHTML = '';
       issues.forEach(issue => {
+        const severity = issue.severity || issue.level || '中';
+        const levelLabel = severity === 'high' || severity === '高' ? '高' : severity === 'medium' || severity === '中' ? '中' : '低';
         const div = document.createElement('div');
-        div.className = `issue-item-compact ${issue.level === '高' ? 'danger' : 'warning'}`;
+        div.className = `issue-item-compact ${levelLabel === '高' ? 'danger' : 'warning'}`;
         div.innerHTML = `
-          <span class="issue-icon">${issue.level === '高' ? '🔴' : '⚠'}</span>
-          <span class="issue-text">${issue.title}</span>
+          <span class="issue-icon">${levelLabel === '高' ? '🔴' : '⚠'}</span>
+          <span class="issue-text">${issue.title || '未知问题'}</span>
           <span class="issue-chapter">Ch.${issue.chapter || '-'}</span>
         `;
         container.appendChild(div);
@@ -427,11 +468,15 @@
       });
     });
 
-    // Engine controls
-    on(qs('#btn-start'), 'click', () => {
+    // Engine controls - auto-detect next chapter
+    on(qs('#btn-start'), 'click', async () => {
+      const chapters = await loadChapters();
       const mode = qs('.mode-option.active')?.dataset.mode || 'auto';
-      api('POST', '/engine/start', { chapter: 1, mode }).then(r => {
-        if (r.ok) showToast('引擎已启动', 'success');
+      // Find first non-committed chapter
+      const next = chapters.find(c => c.status !== 'committed') || { number: 1 };
+      const chapter = next.number;
+      api('POST', '/engine/start', { chapter, mode }).then(r => {
+        if (r.ok) showToast(`引擎已启动 - 第 ${chapter} 章`, 'success');
         else showToast(r.error, 'error');
       });
     });

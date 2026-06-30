@@ -119,15 +119,17 @@
 
       list.innerHTML = '';
       items.forEach(issue => {
+        const severity = issue.severity || issue.level || '中';
+        const levelLabel = severity === 'high' || severity === '高' ? '高' : severity === 'medium' || severity === '中' ? '中' : '低';
         const card = document.createElement('div');
         card.className = `issue-card ${issue.id === selectedIssue?.id ? 'selected' : ''} ${currentTab === 'resolved' ? 'resolved' : ''}`;
         card.innerHTML = `
           <div class="issue-header">
             <span class="issue-title">${issue.title}</span>
-            <span class="issue-level ${issue.level === '高' ? 'high' : issue.level === '中' ? 'medium' : 'low'}">${issue.level}</span>
+            <span class="issue-level ${levelLabel === '高' ? 'high' : levelLabel === '中' ? 'medium' : 'low'}">${levelLabel}</span>
           </div>
           <div class="issue-meta">第 ${issue.chapter} 章 · ${formatDate(issue.created_at * 1000)}</div>
-          <div class="issue-body">${issue.body.substring(0, 100)}${issue.body.length > 100 ? '...' : ''}</div>
+          <div class="issue-body">${(issue.description || issue.body || '').substring(0, 100)}${(issue.description || issue.body || '').length > 100 ? '...' : ''}</div>
         `;
         card.addEventListener('click', () => selectIssue(issue));
         list.appendChild(card);
@@ -141,13 +143,15 @@
     }
 
     function renderIssueDetail(issue) {
+      const severity = issue.severity || issue.level || '中';
+      const levelLabel = severity === 'high' || severity === '高' ? '高' : severity === 'medium' || severity === '中' ? '中' : '低';
       const panel = qs('#issue-detail');
       panel.innerHTML = `
         <h3>${issue.title}</h3>
         <div class="detail-section">
           <div class="detail-label">严重程度</div>
           <div class="detail-value">
-            <span class="issue-level ${issue.level === '高' ? 'high' : issue.level === '中' ? 'medium' : 'low'}">${issue.level}</span>
+            <span class="issue-level ${levelLabel === '高' ? 'high' : levelLabel === '中' ? 'medium' : 'low'}">${levelLabel}</span>
           </div>
         </div>
         <div class="detail-section">
@@ -160,7 +164,7 @@
         </div>
         <div class="detail-section">
           <div class="detail-label">问题详情</div>
-          <div class="detail-value">${issue.body}</div>
+          <div class="detail-value">${issue.description || issue.body || ''}</div>
         </div>
         ${currentTab === 'pending' ? `
           <div class="detail-section">
