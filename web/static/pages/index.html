@@ -99,7 +99,7 @@
 
   <script src="/js/common.js"></script>
   <script>
-    const { api, showToast, NCS } = window;
+    const { api, showToast } = window.NCS || {};
 
     document.getElementById('btn-generate-topics').addEventListener('click', async () => {
       const input = document.getElementById('topic-input').value.trim();
