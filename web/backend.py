@@ -21,6 +21,15 @@ from flask_cors import CORS
 app = Flask(__name__, static_folder="static", static_url_path="")
 CORS(app)
 
+# 禁用 HTML 文件缓存
+@app.after_request
+def add_cache_control(response):
+    if request.path.endswith('.html') or request.path == '/':
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+    return response
+
 # ─── Paths ────────────────────────────────────────────────
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 BOOK_ROOT = PROJECT_ROOT / "book"
