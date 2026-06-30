@@ -174,7 +174,7 @@
 
       async function selectTopic(item) {
         try {
-          await api('POST', '/api/phase/topic', {
+          await api('POST', '/phase/topic', {
             data: {
               title: item.title,
               description: item.desc,
@@ -183,7 +183,7 @@
               target_words: item.words
             }
           });
-          await api('POST', '/api/phase/topic/complete');
+          await api('POST', '/phase/topic/complete');
           showToast(`已选择「${item.title}」，进入框架设计`, 'success');
           setTimeout(() => window.location.href = '/foundation.html', 1000);
         } catch (e) {

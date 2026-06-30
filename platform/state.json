@@ -1,8 +1,10 @@
 {
   "project_id": "ncs-default",
   "project_name": "未命名项目",
-  "phase": "topic",
-  "phases_completed": [],
+  "phase": "foundation",
+  "phases_completed": [
+    "foundation"
+  ],
   "engine": {
     "status": "idle",
     "mode": "manual",
@@ -121,6 +123,16 @@
         ],
         "plot": "主线：萧云父亲被影阁杀害，他踏上复仇之路，逐渐揭开天绝剑谱的秘密。支线：柳如烟寻找失踪的师父，铁狂狮与师门的恩怨。冲突点：萧云发现师父与影阁有牵连，必须在亲情与正义间抉择。高潮：武林大会上，萧云与冷无痕决战，揭露影阁阴谋，成为新任盟主。最终萧云手刃仇人，却选择毁掉天绝剑谱，平息江湖纷争。"
       }
+    },
+    "topic": {
+      "data": {
+        "title": "测试",
+        "description": "测试",
+        "genre": "都市",
+        "tone": "悬疑",
+        "target_words": "80万字"
+      },
+      "completed": true
     }
   },
   "issues": {
@@ -135,5 +147,5 @@
     "quality_threshold": 70
   },
   "created_at": null,
-  "updated_at": 1782789879.2377758
+  "updated_at": 1782807138.357822
 }
