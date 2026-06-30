@@ -46,17 +46,35 @@ const appState = new AppState();
 
 // ─── API Client ───────────────────────────────────────────
 async function api(method, path, body) {
+  const url = API + path;
   const opts = { method, headers: {} };
   if (body) {
     opts.headers['Content-Type'] = 'application/json';
     opts.body = JSON.stringify(body);
   }
+  console.log('[API Request]', method, url, body ? JSON.stringify(body).substring(0, 100) : '');
   try {
-    const res = await fetch(API + path, opts);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
+    const res = await fetch(url, opts);
+    console.log('[API Response]', res.status, res.statusText, 'ok:', res.ok);
+    
+    // 读取响应文本
+    const text = await res.text();
+    console.log('[API Body]', text.substring(0, 200));
+    
+    // 使用 status 而不是 ok，避免扩展篡改 res.ok
+    if (res.status < 200 || res.status >= 300) {
+      throw new Error(`HTTP ${res.status}: ${text.substring(0, 100)}`);
+    }
+    
+    // 尝试解析 JSON
+    try {
+      return JSON.parse(text);
+    } catch (jsonErr) {
+      console.error('[API] JSON parse failed:', jsonErr);
+      throw new Error(`Invalid JSON response: ${text.substring(0, 100)}`);
+    }
   } catch (e) {
-    console.error('API Error:', e);
+    console.error('[API Error]', e);
     throw e;
   }
 }
