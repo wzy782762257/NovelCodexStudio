@@ -32,6 +32,35 @@ LOGS_DIR = PROJECT_ROOT / "platform" / "logs"
 for d in [ISSUES_DIR, LOGS_DIR]:
     d.mkdir(parents=True, exist_ok=True)
 
+# ─── LLM Client Setup ─────────────────────────────────────
+_llm_client = None
+
+def _get_llm_client():
+    """Lazy-init LLM client from config.json"""
+    global _llm_client
+    if _llm_client is not None:
+        return _llm_client
+    
+    config_path = PROJECT_ROOT / "config.json"
+    if not config_path.exists():
+        return None
+    
+    try:
+        cfg = json.loads(config_path.read_text(encoding="utf-8"))
+        sys.path.insert(0, str(ENGINE_DIR))
+        from llm_client import LLMClient
+        _llm_client = LLMClient(
+            base_url=cfg.get("base_url", "https://api.siliconflow.cn/v1"),
+            api_key=cfg.get("api_key", ""),
+            model=cfg.get("model", "deepseek-ai/DeepSeek-V3"),
+            temperature=cfg.get("temperature", 0.7),
+            max_tokens=cfg.get("max_tokens", 4000),
+        )
+        return _llm_client
+    except Exception as e:
+        print(f"[backend] LLM client init failed: {e}", file=sys.stderr)
+        return None
+
 # ─── State Management ─────────────────────────────────────
 class PlatformState:
     """全局平台状态，持久化到 JSON"""
@@ -268,7 +297,7 @@ class EngineStateMachine:
                 self._proc = subprocess.Popen(
                     [
                         sys.executable,
-                        str(ENGINE_DIR / "engine.py"),
+                        str(PROJECT_ROOT / "engine.py"),
                         "--start", str(chapter),
                         "--chapters", str(state.get("settings.batch_size") or 1),
                         "--mode", mode,
@@ -738,35 +767,115 @@ def api_chapter_reject(n):
 
 @app.route("/api/topics/generate", methods=["POST"])
 def api_topics_generate():
-    """生成选题方案（当前返回预设示例，未来接入 AI 生成）"""
+    """调用 LLM 根据用户输入生成个性化选题方案"""
     data = request.get_json() or {}
     user_input = data.get("input", "")
-    # TODO: 接入 LLM 根据 user_input 生成个性化选题
-    # 目前返回几个示例选题供用户选择
-    suggestions = [
-        {
-            "title": "零点回声",
-            "desc": "都市异能悬疑。主角是急救调度员，在凌晨接到死去妹妹的求救电话，逐渐发现城市存在一个'静默计划'——用声音操控记忆的阴谋。",
-            "genre": "都市异能",
-            "tone": "悬疑冷峻",
-            "words": "80-100万字"
-        },
-        {
-            "title": "电话那头的她",
-            "desc": "软科幻+情感。主角通过一部旧电话与三年前的妹妹对话，每次通话都会改变现在，但改变的方向越来越不可控。",
-            "genre": "软科幻",
-            "tone": "温情悬疑",
-            "words": "60-80万字"
-        },
-        {
-            "title": "调度员的午夜档案",
-            "desc": "单元剧+主线。每章是一个求救电话，背后都是超自然事件，主线是主角逐渐发现自己也在某个'实验'中。",
-            "genre": "都市怪谈",
-            "tone": "单元悬疑",
-            "words": "100万字+"
-        }
-    ]
-    return jsonify({"ok": True, "suggestions": suggestions, "source": "preset"})
+    
+    client = _get_llm_client()
+    if not client:
+        return jsonify({"ok": False, "error": "LLM 未配置，请检查 config.json"})
+    
+    prompt = f"""你是一位资深网络小说策划。根据用户输入，生成 3 个差异化的小说选题方案。
+
+用户输入：{user_input if user_input else "都市悬疑+异能"}
+
+要求：
+1. 每个选题必须包含：title（书名）、desc（100字以内简介）、genre（类型）、tone（基调）、words（预估字数范围）
+2. 选题之间要有明显差异，避免同质化
+3. 书名要有吸引力，避免俗套
+4. 简介要突出核心冲突和卖点
+
+直接返回 JSON 数组，格式：
+[
+  {{"title": "...", "desc": "...", "genre": "...", "tone": "...", "words": "..."}},
+  ...
+]
+不要添加任何解释或markdown代码块。"""
+    
+    try:
+        resp = client.chat_json([
+            {"role": "system", "content": "你是一个网络小说选题策划专家。只返回 JSON 格式数据。"},
+            {"role": "user", "content": prompt}
+        ], temperature=0.8, max_tokens=2000)
+        
+        if isinstance(resp, list):
+            suggestions = resp
+        elif isinstance(resp, dict):
+            # LLM may return a single dict (one suggestion) instead of array
+            if resp.get("title") and resp.get("desc"):
+                suggestions = [resp]
+            else:
+                suggestions = resp.get("suggestions") or resp.get("topics") or resp.get("data") or []
+            if not isinstance(suggestions, list):
+                suggestions = [suggestions]
+        else:
+            suggestions = []
+        
+        # Validate and normalize each suggestion
+        valid = []
+        for s in suggestions:
+            if isinstance(s, dict) and s.get("title") and s.get("desc"):
+                valid.append({
+                    "title": s.get("title", ""),
+                    "desc": s.get("desc", ""),
+                    "genre": s.get("genre", "都市"),
+                    "tone": s.get("tone", "悬疑"),
+                    "words": s.get("words", "80-100万字"),
+                })
+        
+        # Fallback: if AI returns fewer than 3, generate the rest via a second call
+        if len(valid) < 3:
+            fallback_prompt = f"""用户想写小说，关键词：{user_input if user_input else "都市悬疑"}
+
+之前已生成的选题：{json.dumps([v["title"] for v in valid], ensure_ascii=False)}
+
+请再补充生成 {3 - len(valid)} 个完全不同的选题，返回 JSON 数组格式：
+[{{"title": "...", "desc": "...", "genre": "...", "tone": "...", "words": "..."}}, ...]
+避免与已有选题重复。"""
+            try:
+                resp2 = client.chat_json([
+                    {"role": "system", "content": "网络小说选题策划专家。只返回 JSON 数组。"},
+                    {"role": "user", "content": fallback_prompt}
+                ], temperature=0.9, max_tokens=2000)
+                if isinstance(resp2, list):
+                    extra = resp2
+                elif isinstance(resp2, dict):
+                    if resp2.get("title") and resp2.get("desc"):
+                        extra = [resp2]
+                    else:
+                        extra = resp2.get("suggestions") or resp2.get("topics") or resp2.get("data") or []
+                else:
+                    extra = []
+                for s in extra:
+                    if isinstance(s, dict) and s.get("title") and s.get("desc"):
+                        valid.append({
+                            "title": s.get("title", ""),
+                            "desc": s.get("desc", ""),
+                            "genre": s.get("genre", "都市"),
+                            "tone": s.get("tone", "悬疑"),
+                            "words": s.get("words", "80-100万字"),
+                        })
+            except Exception:
+                pass
+        
+        # Hard fallback if still less than 3
+        hard_fallbacks = [
+            {"title": "零点回声", "desc": "都市异能悬疑。主角是急救调度员，在凌晨接到死去妹妹的求救电话，逐渐发现城市存在一个'静默计划'——用声音操控记忆的阴谋。", "genre": "都市异能", "tone": "悬疑冷峻", "words": "80-100万字"},
+            {"title": "电话那头的她", "desc": "软科幻+情感。主角通过一部旧电话与三年前的妹妹对话，每次通话都会改变现在，但改变的方向越来越不可控。", "genre": "软科幻", "tone": "温情悬疑", "words": "60-80万字"},
+            {"title": "调度员的午夜档案", "desc": "单元剧+主线。每章是一个求救电话，背后都是超自然事件，主线是主角逐渐发现自己也在某个'实验'中。", "genre": "都市怪谈", "tone": "单元悬疑", "words": "100万字+"},
+        ]
+        while len(valid) < 3:
+            for fb in hard_fallbacks:
+                if fb["title"] not in [v["title"] for v in valid]:
+                    valid.append(fb)
+                    break
+            if len(valid) >= 3:
+                break
+        
+        return jsonify({"ok": True, "suggestions": valid[:3], "source": "ai"})
+    
+    except Exception as e:
+        return jsonify({"ok": False, "error": f"LLM 调用失败: {e}"})
 
 
 # Settings

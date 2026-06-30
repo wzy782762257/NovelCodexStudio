@@ -5,10 +5,10 @@
   "phases_completed": [],
   "engine": {
     "status": "idle",
-    "mode": "auto",
+    "mode": "manual",
     "current_chapter": 4,
     "target_chapters": 10,
-    "start_time": 1782781374.376745,
+    "start_time": 1782788108.6159859,
     "elapsed": 0
   },
   "progress": {
@@ -103,5 +103,5 @@
     "quality_threshold": 70
   },
   "created_at": null,
-  "updated_at": 1782782798.880594
+  "updated_at": 1782788108.63456
 }
