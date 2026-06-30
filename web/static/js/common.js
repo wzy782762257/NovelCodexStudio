@@ -45,38 +45,36 @@ class AppState {
 const appState = new AppState();
 
 // ─── API Client ───────────────────────────────────────────
-async function api(method, path, body) {
-  const url = API + path;
-  const opts = { method, headers: {} };
-  if (body) {
-    opts.headers['Content-Type'] = 'application/json';
-    opts.body = JSON.stringify(body);
-  }
-  console.log('[API Request]', method, url, body ? JSON.stringify(body).substring(0, 100) : '');
-  try {
-    const res = await fetch(url, opts);
-    console.log('[API Response]', res.status, res.statusText, 'ok:', res.ok);
-    
-    // 读取响应文本
-    const text = await res.text();
-    console.log('[API Body]', text.substring(0, 200));
-    
-    // 使用 status 而不是 ok，避免扩展篡改 res.ok
-    if (res.status < 200 || res.status >= 300) {
-      throw new Error(`HTTP ${res.status}: ${text.substring(0, 100)}`);
-    }
-    
-    // 尝试解析 JSON
-    try {
-      return JSON.parse(text);
-    } catch (jsonErr) {
-      console.error('[API] JSON parse failed:', jsonErr);
-      throw new Error(`Invalid JSON response: ${text.substring(0, 100)}`);
-    }
-  } catch (e) {
-    console.error('[API Error]', e);
-    throw e;
-  }
+// 使用 XMLHttpRequest 替代 fetch，避免浏览器扩展拦截篡改响应
+function api(method, path, body) {
+  return new Promise((resolve, reject) => {
+    const url = API + path;
+    const xhr = new XMLHttpRequest();
+    xhr.open(method, url);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    xhr.onload = () => {
+      console.log('[API Response]', xhr.status, xhr.statusText);
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          console.log('[API] Success:', data.ok ? 'ok' : 'error', data.error || '');
+          resolve(data);
+        } catch (e) {
+          console.error('[API] JSON parse failed:', e);
+          reject(new Error('Invalid JSON response'));
+        }
+      } else {
+        console.error('[API] HTTP error:', xhr.status);
+        reject(new Error(`HTTP ${xhr.status}`));
+      }
+    };
+    xhr.onerror = () => {
+      console.error('[API] Network error');
+      reject(new Error('Network error'));
+    };
+    xhr.send(body ? JSON.stringify(body) : null);
+  });
 }
 
 // ─── Navigation ───────────────────────────────────────────
